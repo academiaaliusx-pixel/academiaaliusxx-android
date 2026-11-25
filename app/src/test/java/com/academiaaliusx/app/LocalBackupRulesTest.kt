@@ -1,6 +1,8 @@
 package com.academiaaliusx.app
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Test
 
 class LocalBackupRulesTest {
@@ -11,5 +13,38 @@ class LocalBackupRulesTest {
         assertTrue(json.contains("\"registrations\": [\"a\", \"b\"]"))
         assertTrue(json.contains("\"id\": \"t1\", \"title\": \"Liga\\\\Final\""))
         assertTrue(json.contains("\"schemaVersion\": 1"))
+    }
+
+    @Test fun roundTripsExportedBackupIntoValidatedPayload() {
+        val original = LocalBackupRules.json(
+            "Jugador Uno",
+            setOf("Pokémon", "Beyblade X"),
+            setOf("pokemon-local", "custom-1"),
+            listOf(LocalTournament("custom-1", "Liga de prueba"))
+        )
+        val restored = LocalBackupRules.parse(original)
+        assertEquals("Jugador Uno", restored.playerName)
+        assertEquals(setOf("Pokémon", "Beyblade X"), restored.games)
+        assertEquals(setOf("pokemon-local", "custom-1"), restored.registrations)
+        assertEquals(listOf(LocalTournament("custom-1", "Liga de prueba")), restored.createdTournaments)
+    }
+
+    @Test fun rejectsUnsupportedSchemaAndDuplicateTournamentIds() {
+        expectInvalid("""{"schemaVersion":2,"playerName":"A","games":[],"registrations":[],"createdTournaments":[]}""")
+        expectInvalid("""{"schemaVersion":1,"playerName":"A","games":[],"registrations":[],"createdTournaments":[{"id":"x","title":"Liga"},{"id":"x","title":"Otra"}]}""")
+    }
+
+    @Test fun rejectsMalformedJsonAndOversizedInput() {
+        expectInvalid("no es JSON")
+        expectInvalid(" ".repeat(300 * 1024))
+    }
+
+    private fun expectInvalid(value: String) {
+        try {
+            LocalBackupRules.parse(value)
+            fail("Expected backup validation to reject input")
+        } catch (_: IllegalArgumentException) {
+            // expected
+        }
     }
 }
