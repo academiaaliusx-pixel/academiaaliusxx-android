@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.content.SharedPreferences
 import android.content.Intent
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -31,7 +33,7 @@ class MainActivity:ComponentActivity(){ override fun onCreate(savedInstanceState
  var registrations by remember { mutableStateOf(prefs.getStringSet("registrations",emptySet())?.toSet()?:emptySet()) }
  var customEvents by remember { mutableStateOf(LocalTournamentRules.decodeEvents(prefs.getStringSet("custom_events",emptySet())?.toSet()?:emptySet())) }
  val labels=listOf("Inicio","Comunidad","Torneos","Perfil"); val icons=listOf(Icons.Filled.Home,Icons.Filled.Groups,Icons.Filled.EmojiEvents,Icons.Filled.Person)
- MaterialTheme(colorScheme=darkColorScheme(primary=Cyan,background=Ink,surface=Panel)){ Scaffold(containerColor=Ink,bottomBar={NavigationBar(containerColor=Panel){labels.forEachIndexed{ i,l->NavigationBarItem(selected=i==selected,onClick={selected=i},icon={Icon(icons[i],l)},label={Text(l)},colors=NavigationBarItemDefaults.colors(selectedIconColor=Cyan,selectedTextColor=Cyan,indicatorColor=Color(0xFF29394A),unselectedTextColor=Muted))}}}){ p->Column(Modifier.fillMaxSize().padding(p).padding(horizontal=18.dp).padding(top=20.dp).verticalScroll(rememberScrollState())){Header();Spacer(Modifier.height(24.dp));when(selected){0->Home(PlayerProfileRules.displayName(name)){selected=it};1->Community(games);2->Tournaments(registrations,customEvents,{id->val updated=if(id in registrations) registrations-id else registrations+id;registrations=updated;prefs.edit().putStringSet("registrations",updated.toSet()).apply()},{title->val updated=LocalTournamentRules.add(customEvents,"local-"+java.util.UUID.randomUUID().toString(),title);customEvents=updated;prefs.edit().putStringSet("custom_events",LocalTournamentRules.encodeEvents(updated).toSet()).apply()},{id->val updatedEvents=LocalTournamentRules.remove(customEvents,id);customEvents=updatedEvents;prefs.edit().putStringSet("custom_events",LocalTournamentRules.encodeEvents(updatedEvents).toSet()).apply();val updatedRegistrations=registrations-id;registrations=updatedRegistrations;prefs.edit().putStringSet("registrations",updatedRegistrations.toSet()).apply()});else->Profile(name,games,registrations,customEvents,{value->name=PlayerProfileRules.sanitizeName(value);prefs.edit().putString("name",name).apply()},{value->games=PlayerProfileRules.normalizeGames(value);prefs.edit().putStringSet("games",games.toSet()).apply()})};Spacer(Modifier.height(24.dp))}}}}
+ MaterialTheme(colorScheme=darkColorScheme(primary=Cyan,background=Ink,surface=Panel)){ Scaffold(containerColor=Ink,bottomBar={NavigationBar(containerColor=Panel){labels.forEachIndexed{ i,l->NavigationBarItem(selected=i==selected,onClick={selected=i},icon={Icon(icons[i],l)},label={Text(l)},colors=NavigationBarItemDefaults.colors(selectedIconColor=Cyan,selectedTextColor=Cyan,indicatorColor=Color(0xFF29394A),unselectedTextColor=Muted))}}}){ p->Column(Modifier.fillMaxSize().padding(p).padding(horizontal=18.dp).padding(top=20.dp).verticalScroll(rememberScrollState())){Header();Spacer(Modifier.height(24.dp));when(selected){0->Home(PlayerProfileRules.displayName(name)){selected=it};1->Community(games);2->Tournaments(registrations,customEvents,{id->val updated=if(id in registrations) registrations-id else registrations+id;registrations=updated;prefs.edit().putStringSet("registrations",updated.toSet()).apply()},{title->val updated=LocalTournamentRules.add(customEvents,"local-"+java.util.UUID.randomUUID().toString(),title);customEvents=updated;prefs.edit().putStringSet("custom_events",LocalTournamentRules.encodeEvents(updated).toSet()).apply()},{id->val updatedEvents=LocalTournamentRules.remove(customEvents,id);customEvents=updatedEvents;prefs.edit().putStringSet("custom_events",LocalTournamentRules.encodeEvents(updatedEvents).toSet()).apply();val updatedRegistrations=registrations-id;registrations=updatedRegistrations;prefs.edit().putStringSet("registrations",updatedRegistrations.toSet()).apply()});else->Profile(name,games,registrations,customEvents,{value->name=PlayerProfileRules.sanitizeName(value);prefs.edit().putString("name",name).apply()},{value->games=PlayerProfileRules.normalizeGames(value);prefs.edit().putStringSet("games",games.toSet()).apply()},{payload->name=payload.playerName;games=payload.games;registrations=payload.registrations;customEvents=payload.createdTournaments;prefs.edit().putString("name",name).putStringSet("games",games.toSet()).putStringSet("registrations",registrations.toSet()).putStringSet("custom_events",LocalTournamentRules.encodeEvents(customEvents).toSet()).apply()})};Spacer(Modifier.height(24.dp))}}}}
 @Composable private fun Header(){Row(verticalAlignment=Alignment.CenterVertically){Box(Modifier.size(44.dp).background(Cyan,RoundedCornerShape(14.dp)),contentAlignment=Alignment.Center){Text("AX",color=Ink,fontWeight=FontWeight.Black,fontSize=17.sp)};Spacer(Modifier.width(12.dp));Column{Text("ACADEMIA ALIUS X",fontWeight=FontWeight.Black,letterSpacing=1.2.sp);Text("COMUNIDAD · JUEGO · COMPETICIÓN",color=Muted,fontSize=10.sp,letterSpacing=.5.sp)}}}
 @Composable private fun Home(name:String,navigate:(Int)->Unit){Text("TU UNIVERSO GAMER",color=Cyan,fontSize=12.sp,fontWeight=FontWeight.Bold,letterSpacing=1.5.sp);Spacer(Modifier.height(8.dp));Text("¡Bienvenido, $name!",fontSize=30.sp,fontWeight=FontWeight.Black,lineHeight=36.sp);Spacer(Modifier.height(10.dp));Text("Todo tu mundo competitivo, en un solo lugar.",color=Muted);Spacer(Modifier.height(24.dp));HomeCard("Comunidad","Jugadores y juegos",Icons.Filled.Groups){navigate(1)};HomeCard("Torneos","Competiciones e inscripciones",Icons.Filled.EmojiEvents){navigate(2)};HomeCard("Tu perfil","Personaliza nombre y juegos",Icons.Filled.Person){navigate(3)};HomeCard("Juegos","Beyblade X · Pokémon · Inazuma Eleven",Icons.Filled.SportsEsports){navigate(1)};Text("MVP NATIVO · DATOS LOCALES",color=Muted,fontSize=10.sp,letterSpacing=1.sp)}
 @Composable private fun HomeCard(title:String,subtitle:String,icon:androidx.compose.ui.graphics.vector.ImageVector,click:()->Unit){Card(onClick=click,modifier=Modifier.fillMaxWidth().padding(bottom=12.dp),colors=CardDefaults.cardColors(containerColor=Panel),shape=RoundedCornerShape(18.dp)){Row(Modifier.padding(16.dp),verticalAlignment=Alignment.CenterVertically){Box(Modifier.size(44.dp).background(Color(0xFF243445),RoundedCornerShape(14.dp)),contentAlignment=Alignment.Center){Icon(icon,null,tint=Cyan)};Spacer(Modifier.width(14.dp));Column{Text(title,fontWeight=FontWeight.Bold,fontSize=16.sp);Text(subtitle,color=Muted,fontSize=12.sp)};Spacer(Modifier.weight(1f));Icon(Icons.Filled.ChevronRight,null,tint=Muted)}}}
@@ -82,4 +84,50 @@ class MainActivity:ComponentActivity(){ override fun onCreate(savedInstanceState
   }
  }
 }
-@Composable private fun Profile(name:String,games:Set<String>,registrations:Set<String>,customEvents:List<LocalTournament>,onName:(String)->Unit,onGames:(Set<String>)->Unit){val context=LocalContext.current;SectionTitle("Perfil","Tu identidad en Alius X");OutlinedTextField(value=name,onValueChange=onName,label={Text("Nombre de jugador")},modifier=Modifier.fillMaxWidth(),singleLine=true,colors=OutlinedTextFieldDefaults.colors(focusedTextColor=Color.White,unfocusedTextColor=Color.White,focusedBorderColor=Cyan,focusedLabelColor=Cyan));Spacer(Modifier.height(20.dp));Text("Juegos que practicas",fontWeight=FontWeight.Bold,fontSize=18.sp);PlayerProfileRules.availableGames.forEach{g->Row(Modifier.fillMaxWidth().padding(vertical=6.dp),verticalAlignment=Alignment.CenterVertically){Checkbox(checked=g in games,onCheckedChange={c->onGames(PlayerProfileRules.updateGame(games,g,c))},colors=CheckboxDefaults.colors(checkedColor=Cyan));Text(g)}};Spacer(Modifier.height(12.dp));Card(colors=CardDefaults.cardColors(containerColor=Panel),shape=RoundedCornerShape(18.dp)){Column(Modifier.padding(16.dp)){Text("Copia de seguridad",fontWeight=FontWeight.Bold,fontSize=18.sp,color=Cyan);Spacer(Modifier.height(6.dp));Text("Exporta tu perfil, juegos, inscripciones y torneos creados como JSON. Guarda el texto copiado en un lugar seguro.",color=Muted,fontSize=12.sp);Spacer(Modifier.height(10.dp));Button(onClick={val shareIntent=Intent(Intent.ACTION_SEND).apply{type="application/json";putExtra(Intent.EXTRA_TEXT,LocalBackupRules.json(name,games,registrations,customEvents));putExtra(Intent.EXTRA_TITLE,"Copia de seguridad Academia Alius X")};context.startActivity(Intent.createChooser(shareIntent,"Exportar copia de seguridad"))},modifier=Modifier.fillMaxWidth(),colors=ButtonDefaults.buttonColors(containerColor=Cyan,contentColor=Ink)){Icon(Icons.Filled.Share,null);Spacer(Modifier.width(8.dp));Text("Compartir copia de seguridad")}}};Spacer(Modifier.height(12.dp));Text("Se guarda localmente. Sin cuenta ni sincronización todavía.",color=Muted,fontSize=12.sp)}
+@Composable private fun Profile(name:String,games:Set<String>,registrations:Set<String>,customEvents:List<LocalTournament>,onName:(String)->Unit,onGames:(Set<String>)->Unit,onRestore:(LocalBackupPayload)->Unit){
+ val context=LocalContext.current
+ var pendingRestore by remember { mutableStateOf<LocalBackupPayload?>(null) }
+ var importError by remember { mutableStateOf<String?>(null) }
+ val picker=rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()){uri->
+  if(uri!=null){
+   try{pendingRestore=LocalBackupRules.parse(readBackupDocument(context,uri));importError=null}
+   catch(e:Exception){pendingRestore=null;importError=e.message?:"No se pudo leer la copia."}
+  }
+ }
+ SectionTitle("Perfil","Tu identidad en Alius X")
+ OutlinedTextField(value=name,onValueChange=onName,label={Text("Nombre de jugador")},modifier=Modifier.fillMaxWidth(),singleLine=true,colors=OutlinedTextFieldDefaults.colors(focusedTextColor=Color.White,unfocusedTextColor=Color.White,focusedBorderColor=Cyan,focusedLabelColor=Cyan))
+ Spacer(Modifier.height(20.dp))
+ Text("Juegos que practicas",fontWeight=FontWeight.Bold,fontSize=18.sp)
+ PlayerProfileRules.availableGames.forEach{g->Row(Modifier.fillMaxWidth().padding(vertical=6.dp),verticalAlignment=Alignment.CenterVertically){Checkbox(checked=g in games,onCheckedChange={c->onGames(PlayerProfileRules.updateGame(games,g,c))},colors=CheckboxDefaults.colors(checkedColor=Cyan));Text(g)}}
+ Spacer(Modifier.height(12.dp))
+ Card(colors=CardDefaults.cardColors(containerColor=Panel),shape=RoundedCornerShape(18.dp)){
+  Column(Modifier.padding(16.dp)){
+   Text("Copia de seguridad",fontWeight=FontWeight.Bold,fontSize=18.sp,color=Cyan)
+   Spacer(Modifier.height(6.dp))
+   Text("Exporta o restaura tu perfil, juegos, inscripciones y torneos creados. La restauración reemplazará los datos locales actuales.",color=Muted,fontSize=12.sp)
+   Spacer(Modifier.height(10.dp))
+   Button(onClick={val shareIntent=Intent(Intent.ACTION_SEND).apply{type="application/json";putExtra(Intent.EXTRA_TEXT,LocalBackupRules.json(name,games,registrations,customEvents));putExtra(Intent.EXTRA_TITLE,"Copia de seguridad Academia Alius X")};context.startActivity(Intent.createChooser(shareIntent,"Exportar copia de seguridad"))},modifier=Modifier.fillMaxWidth(),colors=ButtonDefaults.buttonColors(containerColor=Cyan,contentColor=Ink)){Icon(Icons.Filled.Share,null);Spacer(Modifier.width(8.dp));Text("Compartir copia de seguridad")}
+   Spacer(Modifier.height(8.dp))
+   OutlinedButton(onClick={picker.launch(arrayOf("application/json","text/*"))},modifier=Modifier.fillMaxWidth()){Icon(Icons.Filled.Restore,null);Spacer(Modifier.width(8.dp));Text("Restaurar desde archivo JSON")}
+  }
+ }
+ Spacer(Modifier.height(12.dp))
+ Text("Los datos se almacenan localmente. No hay sincronización online todavía.",color=Muted,fontSize=12.sp)
+ if(pendingRestore!=null){
+  val payload=pendingRestore!!
+  AlertDialog(onDismissRequest={pendingRestore=null},title={Text("Confirmar restauración")},text={Column{Text("Se importará el perfil de ${payload.playerName}.");Spacer(Modifier.height(8.dp));Text("Juegos: ${payload.games.size} · Inscripciones: ${payload.registrations.size} · Torneos creados: ${payload.createdTournaments.size}");Spacer(Modifier.height(8.dp));Text("Esto reemplazará los datos locales actuales.",color=Color(0xFFFFB86C))}},confirmButton={TextButton(onClick={onRestore(payload);pendingRestore=null}){Text("Restaurar")}},dismissButton={TextButton(onClick={pendingRestore=null}){Text("Cancelar")}})
+ }
+ if(importError!=null){
+  AlertDialog(onDismissRequest={importError=null},title={Text("No se pudo importar")},text={Text(importError?:"Archivo inválido")},confirmButton={TextButton(onClick={importError=null}){Text("Cerrar")}})
+ }
+}
+private fun readBackupDocument(context:android.content.Context,uri:android.net.Uri):String{
+ val input=context.contentResolver.openInputStream(uri)?:throw IllegalArgumentException("No se pudo abrir el archivo.")
+ input.use{stream->
+  val output=java.io.ByteArrayOutputStream()
+  val buffer=ByteArray(8192)
+  var total=0
+  while(true){val count=stream.read(buffer);if(count<0)break;total+=count;require(total<=256*1024){"La copia supera el tamaño máximo permitido."};output.write(buffer,0,count)}
+  return output.toString("UTF-8")
+ }
+}
