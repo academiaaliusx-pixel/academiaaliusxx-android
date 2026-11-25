@@ -14,8 +14,8 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - name: Build native APK
-        run: gradle assembleDebug
+      - name: Run unit tests and build native APK
+        run: gradle test assembleDebug
       - name: Verify APK
         run: |
           APK=app/build/outputs/apk/debug/app-debug.apk
