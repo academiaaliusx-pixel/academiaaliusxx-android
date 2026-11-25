@@ -6,6 +6,8 @@ data class LocalTournament(val id: String, val title: String)
 
 object LocalTournamentRules {
     const val MAX_TITLE_LENGTH = 48
+    const val MAX_CREATED_TOURNAMENTS = 100
+    private const val MAX_ID_LENGTH = 128
 
     // Preserve spaces while the user is typing; trim only when saving.
     fun cleanTitleInput(input: String): String =
@@ -18,7 +20,7 @@ object LocalTournamentRules {
 
     fun add(current: List<LocalTournament>, id: String, input: String): List<LocalTournament> {
         val title = sanitizeTitle(input)
-        if (id.isBlank() || title.isBlank() || current.any { it.id == id }) return current
+        if (id.isBlank() || id.length > MAX_ID_LENGTH || id != id.trim() || id.any { Character.isISOControl(it) } || title.isBlank() || current.size >= MAX_CREATED_TOURNAMENTS || current.any { it.id == id }) return current
         return current + LocalTournament(id, title)
     }
 
@@ -52,6 +54,6 @@ object LocalTournamentRules {
             if (separator <= 0 || separator == record.lastIndex) return@mapNotNull null
             val id = record.substring(0, separator).trim()
             val title = sanitizeTitle(record.substring(separator + 1))
-            if (id.isBlank() || title.isBlank()) null else LocalTournament(id, title)
-        }.distinctBy { it.id }
+            if (id.isBlank() || id.length > MAX_ID_LENGTH || id != id.trim() || id.any { Character.isISOControl(it) } || title.isBlank()) null else LocalTournament(id, title)
+        }.distinctBy { it.id }.take(MAX_CREATED_TOURNAMENTS)
 }
