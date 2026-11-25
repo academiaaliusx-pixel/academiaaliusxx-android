@@ -42,7 +42,7 @@ class LocalBackupRulesTest {
 
 
     @Test fun rejectsUnsafeRegistrationIds() {
-        expectInvalid("""{"schemaVersion":1,"playerName":"A","games":[],"registrations":["bad\\tID"],"createdTournaments":[]}""")
+        expectInvalid("""{"schemaVersion":1,"playerName":"A","games":[],"registrations":["bad\tID"],"createdTournaments":[]}""")
         expectInvalid("""{"schemaVersion":1,"playerName":"A","games":[],"registrations":["   "],"createdTournaments":[]}""")
         expectInvalid("""{"schemaVersion":1,"playerName":"A","games":[],"registrations":["xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"],"createdTournaments":[]}""")
     }
