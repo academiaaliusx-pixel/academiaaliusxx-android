@@ -1,0 +1,10 @@
+{
+  "appId": "com.academiaaliusx.app",
+  "appName": "Academia Alius X",
+  "webDir": "www",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  }
+}
