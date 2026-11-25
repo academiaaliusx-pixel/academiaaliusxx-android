@@ -1,10 +1,13 @@
 package com.academiaaliusx.app
 
 import android.os.Bundle
+import android.content.SharedPreferences
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -17,64 +20,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private val Ink = Color(0xFF10131C)
-private val Panel = Color(0xFF1A2030)
-private val Cyan = Color(0xFF42D7F5)
-private val Muted = Color(0xFF9BA7BC)
-
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState); setContent { AAXApp() } }
-}
-
-@Composable fun AAXApp() {
-    var selected by remember { mutableStateOf(0) }
-    val labels = listOf("Inicio", "Comunidad", "Torneos", "Perfil")
-    val icons = listOf(Icons.Filled.Home, Icons.Filled.Groups, Icons.Filled.EmojiEvents, Icons.Filled.Person)
-    MaterialTheme(colorScheme = darkColorScheme(primary=Cyan, background=Ink, surface=Panel)) {
-        Scaffold(containerColor=Ink, bottomBar={
-            NavigationBar(containerColor=Panel) {
-                labels.forEachIndexed { index, label -> NavigationBarItem(selected=index==selected, onClick={selected=index}, icon={Icon(icons[index],label)}, label={Text(label)}, colors=NavigationBarItemDefaults.colors(selectedIconColor=Cyan, selectedTextColor=Cyan, indicatorColor=Color(0xFF29394A), unselectedTextColor=Muted)) }
-            }
-        }) { padding ->
-            Column(Modifier.fillMaxSize().padding(padding).padding(horizontal=20.dp).padding(top=24.dp)) {
-                Row(verticalAlignment=Alignment.CenterVertically) {
-                    Box(Modifier.size(44.dp).background(Cyan, RoundedCornerShape(14.dp)), contentAlignment=Alignment.Center) { Text("AX", color=Ink, fontWeight=FontWeight.Black, fontSize=17.sp) }
-                    Spacer(Modifier.width(12.dp)); Column { Text("ACADEMIA ALIUS X", fontWeight=FontWeight.Black, letterSpacing=1.2.sp); Text("COMUNIDAD · JUEGO · COMPETICIÓN", color=Muted, fontSize=10.sp, letterSpacing=.5.sp) }
-                }
-                Spacer(Modifier.height(28.dp))
-                when(selected) {
-                    0 -> HomeScreen()
-                    1 -> SectionScreen("Comunidad", "Encuentra jugadores, conecta y crea tu círculo.", "La comunidad será el punto de encuentro de jugadores de Academia Alius X.")
-                    2 -> SectionScreen("Torneos", "Competiciones, clasificaciones y resultados.", "Aquí reuniremos el calendario, las inscripciones y el seguimiento de torneos.")
-                    else -> SectionScreen("Perfil", "Tu identidad dentro de Academia Alius X.", "El perfil nativo incluirá tus datos, juegos, equipo y actividad.")
-                }
-            }
-        }
-    }
-}
-
-@Composable private fun HomeScreen() {
-    Text("TU UNIVERSO GAMER", color=Cyan, fontSize=12.sp, fontWeight=FontWeight.Bold, letterSpacing=1.5.sp)
-    Spacer(Modifier.height(8.dp)); Text("Bienvenido a\nAcademia Alius X", fontSize=32.sp, fontWeight=FontWeight.Black, lineHeight=36.sp)
-    Spacer(Modifier.height(10.dp)); Text("Todo tu mundo competitivo, en un solo lugar.", color=Muted)
-    Spacer(Modifier.height(24.dp))
-    FeatureCard("Comunidad", "Jugadores, amistades y equipos", Icons.Filled.Groups)
-    FeatureCard("Torneos", "Competiciones y resultados", Icons.Filled.EmojiEvents)
-    FeatureCard("Tus juegos", "Beyblade X · Pokémon · Inazuma Eleven", Icons.Filled.SportsEsports)
-    FeatureCard("Mensajes", "Conecta con otros miembros", Icons.Filled.Chat)
-    Spacer(Modifier.height(18.dp)); Text("PRIMERA VERSIÓN NATIVA", color=Muted, fontSize=11.sp, letterSpacing=1.sp)
-}
-
-@Composable private fun FeatureCard(title:String, subtitle:String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    Card(Modifier.fillMaxWidth().padding(bottom=12.dp), colors=CardDefaults.cardColors(containerColor=Panel), shape=RoundedCornerShape(18.dp)) {
-        Row(Modifier.padding(16.dp), verticalAlignment=Alignment.CenterVertically) {
-            Box(Modifier.size(44.dp).background(Color(0xFF243445),RoundedCornerShape(14.dp)), contentAlignment=Alignment.Center){ Icon(icon,null,tint=Cyan) }
-            Spacer(Modifier.width(14.dp)); Column { Text(title,fontWeight=FontWeight.Bold,fontSize=16.sp); Text(subtitle,color=Muted,fontSize=12.sp) }
-        }
-    }
-}
-
-@Composable private fun SectionScreen(title:String, subtitle:String, description:String) {
-    Text(title,fontSize=30.sp,fontWeight=FontWeight.Black); Spacer(Modifier.height(8.dp)); Text(subtitle,color=Cyan)
-    Spacer(Modifier.height(22.dp)); Card(colors=CardDefaults.cardColors(containerColor=Panel),shape=RoundedCornerShape(20.dp)) { Column(Modifier.padding(20.dp)) { Text(description,color=Muted); Spacer(Modifier.height(12.dp)); Text("En construcción",color=Cyan,fontWeight=FontWeight.Bold) } }
-}
+private val Ink=Color(0xFF10131C); private val Panel=Color(0xFF1A2030); private val Cyan=Color(0xFF42D7F5); private val Muted=Color(0xFF9BA7BC)
+class MainActivity:ComponentActivity(){ override fun onCreate(savedInstanceState:Bundle?){super.onCreate(savedInstanceState); val prefs=getSharedPreferences("aliusx_local",MODE_PRIVATE); setContent{AAXApp(prefs)} } }
+@Composable fun AAXApp(prefs:SharedPreferences){
+ var selected by remember { mutableIntStateOf(0) }; var name by remember { mutableStateOf(prefs.getString("name","Jugador")?: "Jugador") }
+ var games by remember { mutableStateOf(prefs.getStringSet("games",setOf("Beyblade X"))?.toSet()?:setOf("Beyblade X")) }
+ var registrations by remember { mutableStateOf(prefs.getStringSet("registrations",emptySet())?.toSet()?:emptySet()) }
+ val labels=listOf("Inicio","Comunidad","Torneos","Perfil"); val icons=listOf(Icons.Filled.Home,Icons.Filled.Groups,Icons.Filled.EmojiEvents,Icons.Filled.Person)
+ MaterialTheme(colorScheme=darkColorScheme(primary=Cyan,background=Ink,surface=Panel)){ Scaffold(containerColor=Ink,bottomBar={NavigationBar(containerColor=Panel){labels.forEachIndexed{ i,l->NavigationBarItem(selected=i==selected,onClick={selected=i},icon={Icon(icons[i],l)},label={Text(l)},colors=NavigationBarItemDefaults.colors(selectedIconColor=Cyan,selectedTextColor=Cyan,indicatorColor=Color(0xFF29394A),unselectedTextColor=Muted))}}}){ p->Column(Modifier.fillMaxSize().padding(p).padding(horizontal=18.dp).padding(top=20.dp).verticalScroll(rememberScrollState())){Header();Spacer(Modifier.height(24.dp));when(selected){0->Home(name){selected=it};1->Community(games);2->Tournaments(registrations){id->registrations=if(id in registrations) registrations-id else registrations+id;prefs.edit().putStringSet("registrations",registrations.toSet()).apply()};else->Profile(name,games,{name=it;prefs.edit().putString("name",it).apply()},{games=it;prefs.edit().putStringSet("games",it.toSet()).apply()})};Spacer(Modifier.height(24.dp))}}}}
+@Composable private fun Header(){Row(verticalAlignment=Alignment.CenterVertically){Box(Modifier.size(44.dp).background(Cyan,RoundedCornerShape(14.dp)),contentAlignment=Alignment.Center){Text("AX",color=Ink,fontWeight=FontWeight.Black,fontSize=17.sp)};Spacer(Modifier.width(12.dp));Column{Text("ACADEMIA ALIUS X",fontWeight=FontWeight.Black,letterSpacing=1.2.sp);Text("COMUNIDAD · JUEGO · COMPETICIÓN",color=Muted,fontSize=10.sp,letterSpacing=.5.sp)}}}
+@Composable private fun Home(name:String,navigate:(Int)->Unit){Text("TU UNIVERSO GAMER",color=Cyan,fontSize=12.sp,fontWeight=FontWeight.Bold,letterSpacing=1.5.sp);Spacer(Modifier.height(8.dp));Text("¡Bienvenido, $name!",fontSize=30.sp,fontWeight=FontWeight.Black,lineHeight=36.sp);Spacer(Modifier.height(10.dp));Text("Todo tu mundo competitivo, en un solo lugar.",color=Muted);Spacer(Modifier.height(24.dp));HomeCard("Comunidad","Jugadores y juegos",Icons.Filled.Groups){navigate(1)};HomeCard("Torneos","Competiciones e inscripciones",Icons.Filled.EmojiEvents){navigate(2)};HomeCard("Tu perfil","Personaliza nombre y juegos",Icons.Filled.Person){navigate(3)};HomeCard("Juegos","Beyblade X · Pokémon · Inazuma Eleven",Icons.Filled.SportsEsports){navigate(1)};Text("MVP NATIVO · DATOS LOCALES",color=Muted,fontSize=10.sp,letterSpacing=1.sp)}
+@Composable private fun HomeCard(title:String,subtitle:String,icon:androidx.compose.ui.graphics.vector.ImageVector,click:()->Unit){Card(onClick=click,modifier=Modifier.fillMaxWidth().padding(bottom=12.dp),colors=CardDefaults.cardColors(containerColor=Panel),shape=RoundedCornerShape(18.dp)){Row(Modifier.padding(16.dp),verticalAlignment=Alignment.CenterVertically){Box(Modifier.size(44.dp).background(Color(0xFF243445),RoundedCornerShape(14.dp)),contentAlignment=Alignment.Center){Icon(icon,null,tint=Cyan)};Spacer(Modifier.width(14.dp));Column{Text(title,fontWeight=FontWeight.Bold,fontSize=16.sp);Text(subtitle,color=Muted,fontSize=12.sp)};Spacer(Modifier.weight(1f));Icon(Icons.Filled.ChevronRight,null,tint=Muted)}}}
+@Composable private fun SectionTitle(title:String,subtitle:String){Text(title,fontSize=29.sp,fontWeight=FontWeight.Black);Spacer(Modifier.height(6.dp));Text(subtitle,color=Cyan);Spacer(Modifier.height(18.dp))}
+@Composable private fun Community(games:Set<String>){SectionTitle("Comunidad","Jugadores y juegos");Text("Vista de muestra: aún no consulta jugadores reales.",color=Muted,fontSize=12.sp);Spacer(Modifier.height(12.dp));listOf("Beyblade X","Pokémon","Inazuma Eleven","Otros").forEach{g->Card(colors=CardDefaults.cardColors(containerColor=Panel),shape=RoundedCornerShape(16.dp),modifier=Modifier.fillMaxWidth().padding(bottom=10.dp)){Column(Modifier.padding(16.dp)){Text(g,fontWeight=FontWeight.Bold,fontSize=17.sp,color=Cyan);Text(if(g in games)"Seleccionado en tu perfil" else "Explora este espacio",color=Muted,fontSize=12.sp);Text("La búsqueda online y los perfiles se incorporarán con el backend.",fontSize=12.sp)}}}}
+@Composable private fun Tournaments(regs:Set<String>,toggle:(String)->Unit){SectionTitle("Torneos","Competiciones");Text("Eventos de demostración. Inscripciones guardadas solo en este dispositivo.",color=Muted,fontSize=12.sp);Spacer(Modifier.height(12.dp));listOf("bx-local" to "Beyblade X · Arena abierta","pokemon-local" to "Pokémon · Liga amistosa","ie-local" to "Inazuma Eleven · Copa").forEach{(id,t)->Card(colors=CardDefaults.cardColors(containerColor=Panel),shape=RoundedCornerShape(18.dp),modifier=Modifier.fillMaxWidth().padding(bottom=12.dp)){Column(Modifier.padding(16.dp)){Text(t,fontWeight=FontWeight.Bold,fontSize=17.sp);Spacer(Modifier.height(5.dp));Text("Evento de ejemplo",color=Muted,fontSize=12.sp);Spacer(Modifier.height(12.dp));Button(onClick={toggle(id)},colors=ButtonDefaults.buttonColors(containerColor=if(id in regs)Color(0xFF334455)else Cyan,contentColor=if(id in regs)Color.White else Ink)){Text(if(id in regs)"Cancelar inscripción local"else"Apuntarme (local)")}}}}}
+@Composable private fun Profile(name:String,games:Set<String>,onName:(String)->Unit,onGames:(Set<String>)->Unit){SectionTitle("Perfil","Tu identidad en Alius X");OutlinedTextField(value=name,onValueChange=onName,label={Text("Nombre de jugador")},modifier=Modifier.fillMaxWidth(),singleLine=true,colors=OutlinedTextFieldDefaults.colors(focusedTextColor=Color.White,unfocusedTextColor=Color.White,focusedBorderColor=Cyan,focusedLabelColor=Cyan));Spacer(Modifier.height(20.dp));Text("Juegos que practicas",fontWeight=FontWeight.Bold,fontSize=18.sp);listOf("Beyblade X","Pokémon","Inazuma Eleven","Otros").forEach{g->Row(Modifier.fillMaxWidth().padding(vertical=6.dp),verticalAlignment=Alignment.CenterVertically){Checkbox(checked=g in games,onCheckedChange={c->onGames(if(c)games+g else games-g)},colors=CheckboxDefaults.colors(checkedColor=Cyan));Text(g)}};Spacer(Modifier.height(12.dp));Text("Se guarda localmente. Sin cuenta ni sincronización todavía.",color=Muted,fontSize=12.sp)}
