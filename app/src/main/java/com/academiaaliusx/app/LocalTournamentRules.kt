@@ -7,8 +7,12 @@ data class LocalTournament(val id: String, val title: String)
 object LocalTournamentRules {
     const val MAX_TITLE_LENGTH = 48
 
-    fun sanitizeTitle(input: String): String =
-        input.filterNot { Character.isISOControl(it) }.trim().take(MAX_TITLE_LENGTH)
+    // Preserve spaces while the user is typing; trim only when saving.
+    fun cleanTitleInput(input: String): String =
+        input.map { if (Character.isISOControl(it)) if (it == '\n' || it == '\r' || it == '\t') ' ' else null else it }
+            .filterNotNull().joinToString("").take(MAX_TITLE_LENGTH)
+
+    fun sanitizeTitle(input: String): String = cleanTitleInput(input).trim()
 
     fun validTitle(input: String): Boolean = sanitizeTitle(input).isNotBlank()
 
@@ -17,6 +21,9 @@ object LocalTournamentRules {
         if (id.isBlank() || title.isBlank() || current.any { it.id == id }) return current
         return current + LocalTournament(id, title)
     }
+
+    fun remove(current: List<LocalTournament>, id: String): List<LocalTournament> =
+        current.filterNot { it.id == id }
 
     fun encodeEvents(events: List<LocalTournament>): List<String> =
         events.map { it.id + "\t" + sanitizeTitle(it.title) }.filter { it.substringAfter("\t").isNotBlank() }
