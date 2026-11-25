@@ -1,5 +1,5 @@
-# Academia Alius X Android
+# Academia Alius X — Android nativo
 
-Minimal Android wrapper for the live site https://academiaaliusx.com.
+Kotlin + Jetpack Compose. No WebView and no redirect to the website.
 
-Build APK via GitHub Actions workflow.
+The initial native shell includes navigation and feature surfaces for home, community, tournaments and profile. API integration and feature migration are staged separately to protect the production website and data.
