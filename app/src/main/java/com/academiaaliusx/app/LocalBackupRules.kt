@@ -69,7 +69,7 @@ object LocalBackupRules {
             LocalTournament(id, LocalTournamentRules.sanitizeTitle(title))
         }
         require(events.map { it.id }.distinct().size == events.size) { "La copia contiene identificadores de torneo duplicados." }
-        LocalBackupPayload(PlayerProfileRules.displayName(playerName), games, registrations, events)
+        return LocalBackupPayload(PlayerProfileRules.displayName(playerName), games, registrations, events)
     }
 
     private fun readStringArray(obj: JsonObject, key: String, maxItems: Int): List<String> {
