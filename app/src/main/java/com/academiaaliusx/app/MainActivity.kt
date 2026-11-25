@@ -40,6 +40,8 @@ class MainActivity:ComponentActivity(){ override fun onCreate(savedInstanceState
  Text("Eventos de demostración y torneos creados en este dispositivo.",color=Muted,fontSize=12.sp)
  Spacer(Modifier.height(12.dp))
  var title by remember { mutableStateOf("") }
+ var search by remember { mutableStateOf("") }
+ var filter by remember { mutableStateOf("all") }
  Card(colors=CardDefaults.cardColors(containerColor=Panel),shape=RoundedCornerShape(18.dp),modifier=Modifier.fillMaxWidth().padding(bottom=16.dp)){
   Column(Modifier.padding(16.dp)){
    Text("Crear torneo local",fontWeight=FontWeight.Bold,fontSize=18.sp,color=Cyan)
@@ -50,9 +52,22 @@ class MainActivity:ComponentActivity(){ override fun onCreate(savedInstanceState
    Text("Solo se guarda en este móvil; aún no se publica online.",color=Muted,fontSize=11.sp)
   }
  }
- listOf("bx-local" to "Beyblade X · Arena abierta","pokemon-local" to "Pokémon · Liga amistosa","ie-local" to "Inazuma Eleven · Copa").forEach{(id,t)->TournamentCard(id,t,"Evento de demostración",id in regs){toggle(id)}}
- custom.forEach{event->TournamentCard(event.id,event.title,"Evento local · solo en este dispositivo",event.id in regs,onDelete={remove(event.id)}){toggle(event.id)}}
- if(custom.isEmpty()){Text("Tus eventos creados aparecerán aquí.",color=Muted,fontSize=12.sp)}
+ OutlinedTextField(value=search,onValueChange={search=it},label={Text("Buscar torneo")},modifier=Modifier.fillMaxWidth(),singleLine=true,leadingIcon={Icon(Icons.Filled.Search,null)},colors=OutlinedTextFieldDefaults.colors(focusedTextColor=Color.White,unfocusedTextColor=Color.White,focusedBorderColor=Cyan,focusedLabelColor=Cyan))
+ Spacer(Modifier.height(10.dp))
+ Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
+  FilterChip(selected=filter=="all",onClick={filter="all"},label={Text("Todos")})
+  FilterChip(selected=filter=="registered",onClick={filter="registered"},label={Text("Inscritos")})
+  FilterChip(selected=filter=="created",onClick={filter="created"},label={Text("Creados")})
+ }
+ Spacer(Modifier.height(12.dp))
+ val builtInEvents=listOf(LocalTournament("bx-local","Beyblade X · Arena abierta"),LocalTournament("pokemon-local","Pokémon · Liga amistosa"),LocalTournament("ie-local","Inazuma Eleven · Copa"))
+ val createdIds=custom.map{it.id}.toSet()
+ val visible=LocalTournamentRules.visibleEvents(builtInEvents+custom,regs,createdIds,search,filter)
+ visible.forEach{event->
+  val isCreated=event.id in createdIds
+  TournamentCard(event.id,event.title,if(isCreated)"Evento local · solo en este dispositivo" else "Evento de demostración",event.id in regs,onDelete=if(isCreated)({remove(event.id)})else null){toggle(event.id)}
+ }
+ if(visible.isEmpty()){Text("No hay torneos que coincidan con la búsqueda o el filtro.",color=Muted,fontSize=12.sp)}
 }
 @Composable private fun TournamentCard(id:String,title:String,subtitle:String,registered:Boolean,onDelete:(()->Unit)?=null,onToggle:()->Unit){
  Card(colors=CardDefaults.cardColors(containerColor=Panel),shape=RoundedCornerShape(18.dp),modifier=Modifier.fillMaxWidth().padding(bottom=12.dp)){

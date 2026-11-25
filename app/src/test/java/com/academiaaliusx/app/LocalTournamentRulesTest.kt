@@ -41,4 +41,14 @@ class LocalTournamentRulesTest {
     @Test fun ignoresDuplicateIdsWhenDecoding() {
         assertEquals(listOf(LocalTournament("a", "Liga")), LocalTournamentRules.decodeEvents(setOf("a\tLiga", "a\tCopa")))
     }
+    @Test fun filtersByRegistrationCreationAndSearch() {
+        val events = listOf(LocalTournament("a", "Beyblade X"), LocalTournament("b", "Pokémon"), LocalTournament("c", "Liga del sábado"))
+        val registered = setOf("b", "c")
+        val created = setOf("c")
+        assertEquals(listOf(events[1], events[2]), LocalTournamentRules.visibleEvents(events, registered, created, "", "registered"))
+        assertEquals(listOf(events[2]), LocalTournamentRules.visibleEvents(events, registered, created, "", "created"))
+        assertEquals(listOf(events[1]), LocalTournamentRules.visibleEvents(events, registered, created, "  pokémon ", "all"))
+        assertEquals(emptyList<LocalTournament>(), LocalTournamentRules.visibleEvents(events, registered, created, "inexistente", "all"))
+    }
+
 }

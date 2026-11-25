@@ -25,6 +25,24 @@ object LocalTournamentRules {
     fun remove(current: List<LocalTournament>, id: String): List<LocalTournament> =
         current.filterNot { it.id == id }
 
+    fun visibleEvents(
+        events: List<LocalTournament>,
+        registrations: Set<String>,
+        createdIds: Set<String>,
+        query: String,
+        mode: String
+    ): List<LocalTournament> {
+        val normalizedQuery = query.trim()
+        return events.filter { event ->
+            val matchesMode = when (mode) {
+                "registered" -> event.id in registrations
+                "created" -> event.id in createdIds
+                else -> true
+            }
+            matchesMode && (normalizedQuery.isBlank() || event.title.contains(normalizedQuery, ignoreCase = true))
+        }
+    }
+
     fun encodeEvents(events: List<LocalTournament>): List<String> =
         events.map { it.id + "\t" + sanitizeTitle(it.title) }.filter { it.substringAfter("\t").isNotBlank() }
 

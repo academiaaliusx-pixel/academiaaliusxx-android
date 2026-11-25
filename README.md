@@ -6,7 +6,7 @@ Kotlin + Jetpack Compose. No WebView and no redirect to the website.
 
 - Bottom navigation: Home, Community, Tournaments, Profile.
 - Profile name and selected games persist on-device.
-- Local tournament creation, sign-up/cancel and deletion; registrations and events persist on-device.
+- Local tournament creation, sign-up/cancel and deletion; registrations and events persist on-device.\n- Tournament search and filters for all events, registered events and locally created events.
 - Tournament title editing preserves spaces while typing and validates before saving.
 - Unit tests cover profile rules and tournament title, add/remove and persistence rules.
 - Feature data is explicitly demo/local until verified API contracts are available.
