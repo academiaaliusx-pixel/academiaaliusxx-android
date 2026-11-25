@@ -26,7 +26,7 @@ class LocalTournamentRulesTest {
         assertEquals(first, LocalTournamentRules.add(first, "b", " \n "))
     }
 
-    @Test fun removesOnlyRequestedEvent() {
+    @Test fun enforcesCreatedTournamentLimitAndSafeIds() {\n        val full = (1..LocalTournamentRules.MAX_CREATED_TOURNAMENTS).map { LocalTournament("id-$it", "Evento $it") }\n        assertEquals(full, LocalTournamentRules.add(full, "extra", "Otro"))\n        assertEquals(emptyList<LocalTournament>(), LocalTournamentRules.add(emptyList(), "bad\\tID", "Liga"))\n        assertEquals(emptyList<LocalTournament>(), LocalTournamentRules.add(emptyList(), "x".repeat(129), "Liga"))\n    }\n\n    @Test fun removesOnlyRequestedEvent() {
         val source = listOf(LocalTournament("a", "Liga"), LocalTournament("b", "Copa"))
         assertEquals(listOf(LocalTournament("b", "Copa")), LocalTournamentRules.remove(source, "a"))
         assertEquals(source, LocalTournamentRules.remove(source, "missing"))
