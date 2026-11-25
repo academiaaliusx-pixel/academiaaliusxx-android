@@ -1,6 +1,22 @@
 package com.academiaaliusx.app
 
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
+
+data class LocalBackupPayload(
+    val playerName: String,
+    val games: Set<String>,
+    val registrations: Set<String>,
+    val createdTournaments: List<LocalTournament>
+)
+
 object LocalBackupRules {
+    private const val MAX_BACKUP_BYTES = 256 * 1024
+    private const val MAX_REGISTRATIONS = 2000
+    private const val MAX_TOURNAMENTS = 100
+    private const val MAX_ID_LENGTH = 128
+
     fun json(name: String, games: Set<String>, registrations: Set<String>, tournaments: List<LocalTournament>): String {
         val safeName = PlayerProfileRules.displayName(name)
         return buildString {
@@ -17,7 +33,56 @@ object LocalBackupRules {
             append("]\n}")
         }
     }
-    private fun array(values: List<String>): String = values.joinToString(prefix = "[", postfix = "]") { value -> "\"" + escape(value) + "\"" }
+
+    fun parse(raw: String): LocalBackupPayload {
+        require(raw.toByteArray(Charsets.UTF_8).size <= MAX_BACKUP_BYTES) { "La copia supera el tamaño máximo permitido." }
+        val root = try { JsonParser.parseString(raw) } catch (_: Exception) {
+            throw IllegalArgumentException("El archivo no contiene JSON válido.")
+        }
+        require(root.isJsonObject) { "El archivo debe contener un objeto JSON." }
+        val obj = root.asJsonObject
+        require(obj.get("schemaVersion")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isNumber }?.asInt == 1) {
+            "Versión de copia no compatible."
+        }
+        val playerName = obj.get("playerName")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString
+            ?: throw IllegalArgumentException("Falta el nombre del jugador.")
+        require(playerName.length <= 128) { "El nombre del jugador es demasiado largo." }
+
+        val games = readStringArray(obj, "games", 20).let { PlayerProfileRules.normalizeGames(it.toSet()) }
+        val registrations = readStringArray(obj, "registrations", MAX_REGISTRATIONS)
+            .map { it.trim() }.filter { it.isNotBlank() && it.length <= MAX_ID_LENGTH }.toSet()
+
+        val eventsElement = obj.get("createdTournaments")
+        require(eventsElement != null && eventsElement.isJsonArray) { "Falta la lista de torneos creados." }
+        val eventsArray = eventsElement.asJsonArray
+        require(eventsArray.size() <= MAX_TOURNAMENTS) { "La copia contiene demasiados torneos." }
+        val events = eventsArray.map { element ->
+            require(element.isJsonObject) { "Un torneo de la copia tiene un formato incorrecto." }
+            val event = element.asJsonObject
+            val id = event.get("id")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString?.trim()
+                ?: throw IllegalArgumentException("Falta el identificador de un torneo.")
+            val title = event.get("title")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString
+                ?: throw IllegalArgumentException("Falta el título de un torneo.")
+            require(id.isNotBlank() && id.length <= MAX_ID_LENGTH) { "Identificador de torneo inválido." }
+            require(LocalTournamentRules.validTitle(title)) { "El título de un torneo está vacío." }
+            LocalTournament(id, LocalTournamentRules.sanitizeTitle(title))
+        }
+        require(events.map { it.id }.distinct().size == events.size) { "La copia contiene identificadores de torneo duplicados." }
+        LocalBackupPayload(PlayerProfileRules.displayName(playerName), games, registrations, events)
+    }
+
+    private fun readStringArray(obj: JsonObject, key: String, maxItems: Int): List<String> {
+        val element = obj.get(key)
+        require(element != null && element.isJsonArray) { "Falta la lista '$key'." }
+        val array = element.asJsonArray
+        require(array.size() <= maxItems) { "La lista '$key' es demasiado larga." }
+        return array.map { value ->
+            require(value.isJsonPrimitive && value.asJsonPrimitive.isString) { "La lista '$key' contiene un valor inválido." }
+            value.asString
+        }
+    }
+
+    private fun array(values: List<String>): String = values.joinToString(prefix = "[", postfix = "]") { value -> "\""+escape(value)+"\""}
     private fun escape(value: String): String = buildString {
         value.forEach { char ->
             when (char) {
