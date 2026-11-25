@@ -50,8 +50,13 @@ object LocalBackupRules {
         require(playerName.length <= 128) { "El nombre del jugador es demasiado largo." }
 
         val games = readStringArray(obj, "games", 20).let { PlayerProfileRules.normalizeGames(it.toSet()) }
-        val registrations = readStringArray(obj, "registrations", MAX_REGISTRATIONS)
-            .map { it.trim() }.filter { it.isNotBlank() && it.length <= MAX_ID_LENGTH }.toSet()
+        val registrations = readStringArray(obj, "registrations", MAX_REGISTRATIONS).map { rawId ->
+            val id = rawId.trim()
+            require(id.isNotBlank() && id.length <= MAX_ID_LENGTH && id.none { Character.isISOControl(it) }) {
+                "Identificador de inscripción inválido."
+            }
+            id
+        }.toSet()
 
         val eventsElement = obj.get("createdTournaments")
         require(eventsElement != null && eventsElement.isJsonArray) { "Falta la lista de torneos creados." }

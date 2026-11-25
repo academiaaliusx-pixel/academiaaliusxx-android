@@ -40,6 +40,13 @@ class LocalBackupRulesTest {
         expectInvalid(" ".repeat(300 * 1024))
     }
 
+
+    @Test fun rejectsUnsafeRegistrationIds() {
+        expectInvalid("""{"schemaVersion":1,"playerName":"A","games":[],"registrations":["bad\\tID"],"createdTournaments":[]}""")
+        expectInvalid("""{"schemaVersion":1,"playerName":"A","games":[],"registrations":["   "],"createdTournaments":[]}""")
+        expectInvalid("""{"schemaVersion":1,"playerName":"A","games":[],"registrations":["xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"],"createdTournaments":[]}""")
+    }
+
     private fun expectInvalid(value: String) {
         try {
             LocalBackupRules.parse(value)
