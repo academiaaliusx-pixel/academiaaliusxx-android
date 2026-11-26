@@ -2,7 +2,7 @@ name: Build Native Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, integration/aax-web-api]
 permissions:
   contents: read
 jobs:
