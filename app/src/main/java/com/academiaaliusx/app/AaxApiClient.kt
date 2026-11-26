@@ -35,7 +35,7 @@ object AaxApiClient {
                 connectTimeout = 15000
                 readTimeout = 15000
                 instanceFollowRedirects = false
-                cookies.cookieStore.cookies.forEach { setRequestProperty("Cookie", it.name + "=" + it.value) }
+                if (cookies.cookieStore.cookies.isNotEmpty()) setRequestProperty("Cookie", cookies.cookieStore.cookies.joinToString("; ") { it.name + "=" + it.value })
                 if (method == "POST") {
                     setRequestProperty("Origin", BASE)
                     setRequestProperty("Content-Type", "application/json")
