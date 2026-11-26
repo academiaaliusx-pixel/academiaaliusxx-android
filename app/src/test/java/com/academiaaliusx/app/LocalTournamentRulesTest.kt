@@ -87,6 +87,7 @@ class LocalTournamentRulesTest {
         val created = setOf("c")
         assertEquals(listOf(events[1], events[2]), LocalTournamentRules.visibleEvents(events, registered, created, "", "registered"))
         assertEquals(listOf(events[2]), LocalTournamentRules.visibleEvents(events, registered, created, "", "created"))
+        assertEquals(listOf(events[0]), LocalTournamentRules.visibleEvents(events, registered, created, "", "available"))
         assertEquals(listOf(events[1]), LocalTournamentRules.visibleEvents(events, registered, created, "  pokémon ", "all"))
         assertEquals(emptyList<LocalTournament>(), LocalTournamentRules.visibleEvents(events, registered, created, "inexistente", "all"))
     }

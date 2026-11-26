@@ -55,6 +55,7 @@ object LocalTournamentRules {
             val matchesMode = when (mode) {
                 "registered" -> event.id in registrations
                 "created" -> event.id in createdIds
+                "available" -> event.id !in registrations
                 else -> true
             }
             matchesMode && (normalizedQuery.isBlank() || event.title.contains(normalizedQuery, ignoreCase = true))

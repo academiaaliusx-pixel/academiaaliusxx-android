@@ -70,6 +70,9 @@ class MainActivity:ComponentActivity(){ override fun onCreate(savedInstanceState
   FilterChip(selected=filter=="created",onClick={filter="created"},label={Text("Creados")})
   FilterChip(selected=alphabetical,onClick={alphabetical=!alphabetical},label={Text("A-Z")})
  }
+ Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.Start){
+  FilterChip(selected=filter=="available",onClick={filter="available"},label={Text("Sin inscripción")})
+ }
  Spacer(Modifier.height(12.dp))
  val builtInEvents=listOf(LocalTournament("bx-local","Beyblade X · Arena abierta"),LocalTournament("pokemon-local","Pokémon · Liga amistosa"),LocalTournament("ie-local","Inazuma Eleven · Copa"))
  val createdIds=custom.map{it.id}.toSet()
