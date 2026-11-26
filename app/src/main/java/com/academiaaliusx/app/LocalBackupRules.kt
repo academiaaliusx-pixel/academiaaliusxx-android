@@ -56,8 +56,8 @@ object LocalBackupRules {
 
         val games = readStringArray(obj, "games", 20).let { PlayerProfileRules.normalizeGames(it.toSet()) }
         val registrations = readStringArray(obj, "registrations", MAX_REGISTRATIONS).map { rawId ->
-            val id = rawId.trim()
-            require(id.isNotBlank() && id.length <= MAX_ID_LENGTH && id.none { Character.isISOControl(it) }) {
+            val id = rawId
+            require(id.isNotBlank() && id == id.trim() && id.length <= MAX_ID_LENGTH && id.none { Character.isISOControl(it) }) {
                 "Identificador de inscripción inválido."
             }
             id
@@ -70,11 +70,11 @@ object LocalBackupRules {
         val events = eventsArray.map { element ->
             require(element.isJsonObject) { "Un torneo de la copia tiene un formato incorrecto." }
             val event = element.asJsonObject
-            val id = event.get("id")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString?.trim()
+            val id = event.get("id")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString
                 ?: throw IllegalArgumentException("Falta el identificador de un torneo.")
             val title = event.get("title")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString
                 ?: throw IllegalArgumentException("Falta el título de un torneo.")
-            require(id.isNotBlank() && id.length <= MAX_ID_LENGTH && id.none { Character.isISOControl(it) }) { "Identificador de torneo inválido." }
+            require(id.isNotBlank() && id == id.trim() && id.length <= MAX_ID_LENGTH && id.none { Character.isISOControl(it) }) { "Identificador de torneo inválido." }
             require(LocalTournamentRules.validTitle(title)) { "El título de un torneo está vacío." }
             LocalTournament(id, LocalTournamentRules.sanitizeTitle(title))
         }
