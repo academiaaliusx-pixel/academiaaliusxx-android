@@ -34,3 +34,13 @@ Before implementing live requests, inspect the Pages Functions source or obtain 
 - Do not ship production credentials or privileged secrets in the APK.
 - Treat session storage, token expiry/refresh, error handling, and account deletion as security-sensitive.
 - Never perform schema changes or production writes from the mobile client.
+
+
+## Follow-up read-only audit (26 November 2026)
+
+- The Pages project metadata still reports `uses_functions: true`, and the latest production deployment metadata remains the deployment dated 24 November 2026 at 19:02 UTC.
+- The account-level Workers script listing returned an empty list.
+- Direct read-only retrieval of `pages-worker--23556599-production` and `pages-worker--23556599-preview` returned HTTP 404 with Cloudflare error `10007` (`This Worker does not exist on your account`). These Pages-managed scripts are not exposed as independently retrievable Workers through the available API.
+- No deployment, project setting, D1 schema, or row data was changed during this follow-up.
+
+The API route and auth contract remains unverified. The native app must continue to avoid live account, tournament, messaging, and profile writes until handlers or a verified contract become available.
