@@ -54,15 +54,17 @@ class LocalBackupRulesTest {
         expectInvalid("""{"schemaVersion":1,"playerName":"A","games":[],"registrations":[],"createdTournaments":[{"id":" padded ","title":"Liga"}]}""")
     }
 
-    @Test fun exportLimitsAndSanitizesRecordsSoBackupRemainsRestorable() {
-        val registrations = (1..2005).map { "reg-$it" }.toSet() + setOf("bad\tID", " ")
+    @Test fun exportDropsUnknownRegistrationsAndSanitizesRecordsSoBackupRemainsRestorable() {
+        val registrations = (1..110).map { "id-$it" }.toSet() + setOf("bx-local", "pokemon-local", "ie-local", "bad\\tID", " ")
         val tournaments = (1..110).map { LocalTournament("id-$it", "Evento $it") } +
-            listOf(LocalTournament("bad\tID", "Unsafe"), LocalTournament(" ", "Empty ID"))
+            listOf(LocalTournament("bad\\tID", "Unsafe"), LocalTournament(" ", "Empty ID"))
         val restored = LocalBackupRules.parse(LocalBackupRules.json("Jugador", setOf("Pokémon", "No válido"), registrations, tournaments))
-        assertEquals(2000, restored.registrations.size)
-        assertTrue(restored.registrations.none { it.contains('\t') || it.isBlank() })
+        assertEquals(103, restored.registrations.size)
+        assertTrue(restored.registrations.none { it.contains('\\t') || it.isBlank() })
         assertEquals(LocalTournamentRules.MAX_CREATED_TOURNAMENTS, restored.createdTournaments.size)
-        assertTrue(restored.createdTournaments.none { it.id.contains('\t') || it.id.isBlank() })
+        assertTrue(restored.createdTournaments.none { it.id.contains('\\t') || it.id.isBlank() })
+        val knownIds = setOf("bx-local", "pokemon-local", "ie-local") + restored.createdTournaments.map { it.id }
+        assertTrue(restored.registrations.all { it in knownIds })
         assertEquals(setOf("Pokémon"), restored.games)
     }
 
