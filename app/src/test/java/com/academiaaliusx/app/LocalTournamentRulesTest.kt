@@ -26,7 +26,14 @@ class LocalTournamentRulesTest {
         assertEquals(first, LocalTournamentRules.add(first, "b", " \n "))
     }
 
-    @Test fun enforcesCreatedTournamentLimitAndSafeIds() {\n        val full = (1..LocalTournamentRules.MAX_CREATED_TOURNAMENTS).map { LocalTournament("id-$it", "Evento $it") }\n        assertEquals(full, LocalTournamentRules.add(full, "extra", "Otro"))\n        assertEquals(emptyList<LocalTournament>(), LocalTournamentRules.add(emptyList(), "bad\\tID", "Liga"))\n        assertEquals(emptyList<LocalTournament>(), LocalTournamentRules.add(emptyList(), "x".repeat(129), "Liga"))\n    }\n\n    @Test fun removesOnlyRequestedEvent() {
+    @Test fun enforcesCreatedTournamentLimitAndSafeIds() {
+        val full = (1..LocalTournamentRules.MAX_CREATED_TOURNAMENTS).map { LocalTournament("id-$it", "Evento $it") }
+        assertEquals(full, LocalTournamentRules.add(full, "extra", "Otro"))
+        assertEquals(emptyList<LocalTournament>(), LocalTournamentRules.add(emptyList(), "bad\tID", "Liga"))
+        assertEquals(emptyList<LocalTournament>(), LocalTournamentRules.add(emptyList(), "x".repeat(129), "Liga"))
+    }
+
+    @Test fun removesOnlyRequestedEvent() {
         val source = listOf(LocalTournament("a", "Liga"), LocalTournament("b", "Copa"))
         assertEquals(listOf(LocalTournament("b", "Copa")), LocalTournamentRules.remove(source, "a"))
         assertEquals(source, LocalTournamentRules.remove(source, "missing"))
@@ -38,9 +45,17 @@ class LocalTournamentRulesTest {
         assertEquals(source, LocalTournamentRules.decodeEvents(encoded).sortedBy { it.id })
     }
 
-    @Test fun encodingRejectsUnsafeIdsAndCapsOutput() {\n        val unsafe = listOf(LocalTournament("bad\\tID", "Liga"), LocalTournament("x".repeat(129), "Copa"))\n        assertEquals(emptyList<String>(), LocalTournamentRules.encodeEvents(unsafe))\n        val excess = (1..110).map { LocalTournament("id-$it", "Evento $it") }\n        assertEquals(LocalTournamentRules.MAX_CREATED_TOURNAMENTS, LocalTournamentRules.encodeEvents(excess).size)\n    }\n\n    @Test fun ignoresDuplicateIdsWhenDecoding() {
+    @Test fun encodingRejectsUnsafeIdsAndCapsOutput() {
+        val unsafe = listOf(LocalTournament("bad\tID", "Liga"), LocalTournament("x".repeat(129), "Copa"))
+        assertEquals(emptyList<String>(), LocalTournamentRules.encodeEvents(unsafe))
+        val excess = (1..110).map { LocalTournament("id-$it", "Evento $it") }
+        assertEquals(LocalTournamentRules.MAX_CREATED_TOURNAMENTS, LocalTournamentRules.encodeEvents(excess).size)
+    }
+
+    @Test fun ignoresDuplicateIdsWhenDecoding() {
         assertEquals(listOf(LocalTournament("a", "Liga")), LocalTournamentRules.decodeEvents(setOf("a\tLiga", "a\tCopa")))
     }
+
     @Test fun filtersByRegistrationCreationAndSearch() {
         val events = listOf(LocalTournament("a", "Beyblade X"), LocalTournament("b", "Pokémon"), LocalTournament("c", "Liga del sábado"))
         val registered = setOf("b", "c")
@@ -50,5 +65,4 @@ class LocalTournamentRulesTest {
         assertEquals(listOf(events[1]), LocalTournamentRules.visibleEvents(events, registered, created, "  pokémon ", "all"))
         assertEquals(emptyList<LocalTournament>(), LocalTournamentRules.visibleEvents(events, registered, created, "inexistente", "all"))
     }
-
 }
