@@ -51,7 +51,7 @@ class MainActivity:ComponentActivity(){override fun onCreate(savedInstanceState:
    scope.launch{busy=true;notice="";try{val r=if(registerMode)AaxApiClient.register(nick,email,password) else AaxApiClient.login(nick,password);if(r.ok){notice=if(registerMode&&r.body.optBoolean("verification_required"))"Cuenta creada. Comprueba el correo para verificarla." else "Acceso correcto.";reload()}else notice=r.body.optString("error","No se pudo completar la operación.")}catch(e:Exception){notice=e.message?: "Error de conexión"}finally{busy=false}}
  })
  else when(page){
-  0->HomeScreen(user!!,tournaments.size,{page=1},{page=2})
+  0->HomeScreen(user!!,tournaments.size,tournaments,{page=1},{page=2})
   1->TournamentScreen(tournaments,user!!,busy,notice,{notice=it},{id,joined->scope.launch{busy=true;try{val r=if(joined)AaxApiClient.leaveTournament(id)else AaxApiClient.joinTournament(id);if(r.ok){notice=if(joined)"Inscripción cancelada." else "Inscripción confirmada.";reload()}else notice=r.body.optString("error","Error")}catch(e:Exception){notice=e.message?: "Error"}finally{busy=false}}})
   else->ProfileScreen(user!!,profile,busy,notice,{scope.launch{busy=true;try{profile=AaxApiClient.profile(user?.optString("nick")?:"").body}catch(e:Exception){notice=e.message?: "Error"}finally{busy=false}}},{scope.launch{busy=true;try{val r=AaxApiClient.logout();if(r.ok){user=null;profile=null;authMode=true;page=0;notice="Sesión cerrada."}else notice="No se pudo cerrar sesión"}finally{busy=false}}})
  }
