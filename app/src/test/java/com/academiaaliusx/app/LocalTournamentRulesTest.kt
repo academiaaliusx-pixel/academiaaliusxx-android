@@ -26,6 +26,13 @@ class LocalTournamentRulesTest {
         assertEquals(first, LocalTournamentRules.add(first, "b", " \n "))
     }
 
+    @Test fun editUpdatesOnlyTargetAndTrimsTitle() {
+        val source = listOf(LocalTournament("a", "Liga"), LocalTournament("b", "Copa"))
+        assertEquals(listOf(LocalTournament("a", "Liga nueva"), source[1]), LocalTournamentRules.edit(source, "a", " Liga nueva "))
+        assertEquals(source, LocalTournamentRules.edit(source, "a", " \n "))
+        assertEquals(source, LocalTournamentRules.edit(source, "missing", "Otra"))
+    }
+
     @Test fun enforcesCreatedTournamentLimitAndSafeIds() {
         val full = (1..LocalTournamentRules.MAX_CREATED_TOURNAMENTS).map { LocalTournament("id-$it", "Evento $it") }
         assertEquals(full, LocalTournamentRules.add(full, "extra", "Otro"))
