@@ -61,7 +61,7 @@ object LocalTournamentRules {
     }
 
     fun encodeEvents(events: List<LocalTournament>): List<String> =
-        events.filter { it.id.isNotBlank() && it.id.length <= MAX_ID_LENGTH && it.id == it.trim() && it.none { ch -> Character.isISOControl(ch) } }.take(MAX_CREATED_TOURNAMENTS).map { it.id + "\t" + sanitizeTitle(it.title) }.filter { it.substringAfter("\t").isNotBlank() }
+        events.filter { it.id.isNotBlank() && it.id.length <= MAX_ID_LENGTH && it.id == it.id.trim() && it.id.none { ch -> Character.isISOControl(ch) } }.take(MAX_CREATED_TOURNAMENTS).map { it.id + "\t" + sanitizeTitle(it.title) }.filter { it.substringAfter("\t").isNotBlank() }
 
     fun decodeEvents(records: Set<String>): List<LocalTournament> =
         records.mapNotNull { record ->
