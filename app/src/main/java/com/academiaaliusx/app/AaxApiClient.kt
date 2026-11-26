@@ -16,7 +16,7 @@ object AaxApiClient {
 
     suspend fun me():ApiResult=request("GET","/api/me",null)
     suspend fun login(identifier:String,password:String):ApiResult=request("POST","/api/login",JSONObject().put("id",identifier).put("password",password))
-    suspend fun register(nick:String,email:String,password:String):ApiResult=request("POST","/api/register",JSONObject().put("nick",nick).put("email",email).put("password",password))
+    suspend fun register(nick:String,email:String,password:String):ApiResult=request("POST","/api/register",JSONObject().put("nick",nick).put("email",email).put("password",password))\n    suspend fun forgotPassword(email:String):ApiResult=request("POST","/api/forgot-password",JSONObject().put("email",email))\n    suspend fun resendVerification(email:String):ApiResult=request("POST","/api/resend-verification",JSONObject().put("email",email))\n    suspend fun resetPassword(token:String,password:String):ApiResult=request("POST","/api/reset-password",JSONObject().put("token",token).put("password",password))\n    suspend fun uploadAvatar(data:String):ApiResult=request("POST","/api/avatar",JSONObject().put("data",data))\n    suspend fun removeAvatar():ApiResult=request("POST","/api/avatar",JSONObject().put("remove",true))\n    suspend fun changePassword(current:String,newPassword:String):ApiResult=request("POST","/api/password",JSONObject().put("current_password",current).put("password",newPassword))
     suspend fun logout():ApiResult=request("POST","/api/logout",JSONObject())
     suspend fun tournaments():ApiResult=request("GET","/api/tournaments",null)
     suspend fun joinTournament(id:String):ApiResult=request("POST","/api/join",JSONObject().put("id",id))
