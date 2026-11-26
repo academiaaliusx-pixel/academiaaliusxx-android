@@ -17,6 +17,7 @@ object LocalBackupRules {
     private const val MAX_REGISTRATIONS = 2000
     private const val MAX_TOURNAMENTS = 100
     private const val MAX_ID_LENGTH = 128
+    private val BUILT_IN_EVENT_IDS = setOf("bx-local", "pokemon-local", "ie-local")
 
     fun json(name: String, games: Set<String>, registrations: Set<String>, tournaments: List<LocalTournament>): String {
         val safeName = PlayerProfileRules.displayName(name)
@@ -55,13 +56,15 @@ object LocalBackupRules {
         require(playerName.length <= 128) { "El nombre del jugador es demasiado largo." }
 
         val games = readStringArray(obj, "games", 20).let { PlayerProfileRules.normalizeGames(it.toSet()) }
-        val registrations = readStringArray(obj, "registrations", MAX_REGISTRATIONS).map { rawId ->
+        val registrationList = readStringArray(obj, "registrations", MAX_REGISTRATIONS).map { rawId ->
             val id = rawId
             require(id.isNotBlank() && id == id.trim() && id.length <= MAX_ID_LENGTH && id.none { Character.isISOControl(it) }) {
                 "Identificador de inscripción inválido."
             }
             id
-        }.toSet()
+        }
+        require(registrationList.distinct().size == registrationList.size) { "La copia contiene inscripciones duplicadas." }
+        val registrations = registrationList.toSet()
 
         val eventsElement = obj.get("createdTournaments")
         require(eventsElement != null && eventsElement.isJsonArray) { "Falta la lista de torneos creados." }
@@ -79,6 +82,7 @@ object LocalBackupRules {
             LocalTournament(id, LocalTournamentRules.sanitizeTitle(title))
         }
         require(events.map { it.id }.distinct().size == events.size) { "La copia contiene identificadores de torneo duplicados." }
+        require(events.none { it.id in BUILT_IN_EVENT_IDS }) { "La copia contiene un identificador reservado para un torneo de muestra." }
         return LocalBackupPayload(PlayerProfileRules.displayName(playerName), games, registrations, events)
     }
 
