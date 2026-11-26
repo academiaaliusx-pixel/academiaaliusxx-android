@@ -44,3 +44,14 @@ Before implementing live requests, inspect the Pages Functions source or obtain 
 - No deployment, project setting, D1 schema, or row data was changed during this follow-up.
 
 The API route and auth contract remains unverified. The native app must continue to avoid live account, tournament, messaging, and profile writes until handlers or a verified contract become available.
+
+
+## Read-only schema follow-up (26 November 2026, 10:17 UTC)
+
+- Pages project metadata again confirmed `academiaaliusx-app`, bound to production D1 `academiaaliusx-db` and preview/staging D1 `academiaaliusx-staging-db`. The latest production deployment metadata still identifies the deployment from 24 November 2026 at 19:02 UTC.
+- Workers scripts listing returned an empty list. Read-only retrieval of both Pages-managed script names (`pages-worker--23556599-production` and `pages-worker--23556599-preview`) again returned HTTP 404 / error 10007, `This Worker does not exist on your account`.
+- Read-only SQL queried only `sqlite_master` table names and CREATE statements, not application rows. Production returned 69 schema rows (including SQLite internal entries) and staging 54. The API metadata reported `rows_written = 0` and `changed_db = false` for both queries.
+- The staging schema still lacks production tables `direct_messages`, `friendships`, `social_blocks`, `teams`, `team_members`, and `team_requests`; staging contains the STAAX match/audit tables that were not present in the production schema snapshot. Tournament/user schemas also remain non-identical.
+- No production or staging records, deployments, website content, or database schema were changed.
+
+The native API/auth contract remains unavailable, so live account, profile, social, and tournament writes are still blocked pending verified Pages Function source or an endpoint contract.
