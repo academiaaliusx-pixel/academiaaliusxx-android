@@ -44,27 +44,58 @@ class MainActivity:ComponentActivity(){override fun onCreate(savedInstanceState:
    }catch(e:Exception){notice="Error de conexión: "+(e.message?: "desconocido")}finally{busy=false} }
  }
  LaunchedEffect(Unit){reload()}
- var moreNav by remember { mutableStateOf(false) }; MaterialTheme(colorScheme=darkColorScheme(primary=Cyan,background=Ink,surface=Panel,onBackground=TextMain,onSurface=TextMain,secondary=Color(0xFF438B98))){Scaffold(containerColor=Ink,bottomBar={if(user!=null){NavigationBar(containerColor=Ink, tonalElevation=0.dp){val main=listOf(0,1,2,3,4);val labels=listOf("Inicio","Juegos","Torneos","Ranking","Perfil");val icons=listOf(Icons.Filled.Home,Icons.Filled.SportsEsports,Icons.Filled.EmojiEvents,Icons.Filled.Leaderboard,Icons.Filled.Person);main.forEachIndexed{pos,idx->NavigationBarItem(colors=NavigationBarItemDefaults.colors(selectedIconColor=Ink,selectedTextColor=Cyan,indicatorColor=Cyan,unselectedIconColor=Muted,unselectedTextColor=Muted),selected=page==idx,onClick={page=idx;if(idx==4)scope.launch{busy=true;try{profile=AaxApiClient.profile(user?.optString("nick")?:"").body}finally{busy=false}}},icon={Icon(icons[pos],labels[pos])},label={Text(labels[pos],maxLines=1)})};NavigationBarItem(selected=page>=5,onClick={moreNav=true},icon={Icon(Icons.Filled.MoreHoriz,"Más")},label={Text("Más",maxLines=1)})};DropdownMenu(expanded=moreNav,onDismissRequest={moreNav=false},modifier=Modifier.background(Panel)){listOf(5 to "Comunidad",6 to "Ajustes",7 to "Organización").forEach{(idx,label)->DropdownMenuItem(text={Text(label)},leadingIcon={Icon(listOf(Icons.Filled.People,Icons.Filled.Settings,Icons.Filled.AdminPanelSettings)[idx-5],null)},onClick={moreNav=false;page=idx})}}}){pad->>
- Column(Modifier.fillMaxSize().padding(pad).background(Ink).padding(horizontal=20.dp,vertical=16.dp)){
- Header()
- Spacer(Modifier.height(20.dp))
- if(user==null) AuthScreen(registerMode,recoveryMode,nick,email,password,{nick=it},{email=it},{password=it},{registerMode=it},{recoveryMode=it},busy,notice,{notice=""},{ 
-   scope.launch{busy=true;notice="";try{val r=if(recoveryMode)AaxApiClient.forgotPassword(email) else if(registerMode)AaxApiClient.register(nick,email,password) else AaxApiClient.login(nick,password);if(r.ok){notice=if(recoveryMode)"Si la cuenta existe, recibirás instrucciones por correo." else if(registerMode&&r.body.optBoolean("verification_required"))"Cuenta creada. Comprueba el correo para verificarla." else "Acceso correcto.";if(!recoveryMode)reload()}else notice=r.body.optString("error","No se pudo completar la operación.")}catch(e:Exception){notice=e.message?: "Error de conexión"}finally{busy=false}}
- })
- else when(page){
-  0->HomeScreen(user!!,tournaments.size,tournaments,{page=2},{page=4})
-  1->GamesScreen(tournaments)
-  2->TournamentScreen(tournaments,user!!,busy,notice,{notice=it},{id,joined->scope.launch{busy=true;try{val r=if(joined)AaxApiClient.leaveTournament(id)else AaxApiClient.joinTournament(id);if(r.ok){notice=if(joined)"Inscripción cancelada." else "Inscripción confirmada.";reload()}else notice=r.body.optString("error","Error")}catch(e:Exception){notice=e.message?: "Error"}finally{busy=false}}})
-  3->RankingsScreen(tournaments)
-  4->ProfileScreen(user!!,profile,busy,notice,{scope.launch{busy=true;try{profile=AaxApiClient.profile(user?.optString("nick")?:"").body}catch(e:Exception){notice=e.message?: "Error"}finally{busy=false}}},{scope.launch{busy=true;try{val r=AaxApiClient.logout();if(r.ok){user=null;profile=null;authMode=true;page=0;notice="Sesión cerrada."}else notice="No se pudo cerrar sesión"}finally{busy=false}}})
-  5->CommunityScreen()
-  6->SettingsScreen(user!!,{scope.launch{busy=true;try{val r=AaxApiClient.logout();if(r.ok){user=null;profile=null;page=0;notice="Sesión cerrada."}}finally{busy=false}}})
-  else->OrganizationScreen(user!!)
+ var moreNav by remember { mutableStateOf(false) }
+ MaterialTheme(colorScheme = darkColorScheme(primary = Cyan, background = Ink, surface = Panel, onBackground = TextMain, onSurface = TextMain, secondary = Color(0xFF438B98))) {
+  Scaffold(
+   containerColor = Ink,
+   bottomBar = {
+    if (user != null) {
+     Box {
+      NavigationBar(containerColor = Ink, tonalElevation = 0.dp) {
+       val labels = listOf("Inicio", "Juegos", "Torneos", "Ranking", "Perfil")
+       val icons = listOf(Icons.Filled.Home, Icons.Filled.SportsEsports, Icons.Filled.EmojiEvents, Icons.Filled.Leaderboard, Icons.Filled.Person)
+       for (idx in 0..4) {
+        NavigationBarItem(
+         selected = page == idx,
+         onClick = { page = idx; if (idx == 4) scope.launch { busy = true; try { profile = AaxApiClient.profile(user?.optString("nick") ?: "").body } finally { busy = false } } },
+         icon = { Icon(icons[idx], contentDescription = labels[idx]) },
+         label = { Text(labels[idx], maxLines = 1) },
+         colors = NavigationBarItemDefaults.colors(selectedIconColor = Ink, selectedTextColor = Cyan, indicatorColor = Cyan, unselectedIconColor = Muted, unselectedTextColor = Muted)
+        )
+       }
+       NavigationBarItem(selected = page >= 5, onClick = { moreNav = true }, icon = { Icon(Icons.Filled.MoreHoriz, contentDescription = "Más") }, label = { Text("Más", maxLines = 1) })
+      }
+      DropdownMenu(expanded = moreNav, onDismissRequest = { moreNav = false }, modifier = Modifier.background(Panel)) {
+       listOf(5 to "Comunidad", 6 to "Ajustes", 7 to "Organización").forEach { (idx, label) ->
+        DropdownMenuItem(text = { Text(label) }, onClick = { moreNav = false; page = idx }, leadingIcon = { Icon(listOf(Icons.Filled.People, Icons.Filled.Settings, Icons.Filled.AdminPanelSettings)[idx - 5], contentDescription = label) })
+       }
+      }
+     }
+    }
+   }
+  ) { innerPadding ->
+   Column(Modifier.fillMaxSize().padding(innerPadding).background(Ink).padding(horizontal = 20.dp, vertical = 16.dp)) {
+    Header()
+    Spacer(Modifier.height(20.dp))
+    if (user == null) AuthScreen(registerMode, recoveryMode, nick, email, password, { nick = it }, { email = it }, { password = it }, { registerMode = it }, { recoveryMode = it }, busy, notice, { notice = "" }, {
+     scope.launch { busy = true; notice = ""; try { val r = if (recoveryMode) AaxApiClient.forgotPassword(email) else if (registerMode) AaxApiClient.register(nick, email, password) else AaxApiClient.login(nick, password); if (r.ok) { notice = if (recoveryMode) "Si la cuenta existe, recibirás instrucciones por correo." else if (registerMode && r.body.optBoolean("verification_required")) "Cuenta creada. Comprueba el correo para verificarla." else "Acceso correcto."; if (!recoveryMode) reload() } else notice = r.body.optString("error", "No se pudo completar la operación.") } catch (e: Exception) { notice = e.message ?: "Error de conexión" } finally { busy = false } }
+    })
+    else when (page) {
+     0 -> HomeScreen(user!!, tournaments.size, tournaments, { page = 2 }, { page = 4 })
+     1 -> GamesScreen(tournaments)
+     2 -> TournamentScreen(tournaments, user!!, busy, notice, { notice = it }, { id, joined -> scope.launch { busy = true; try { val r = if (joined) AaxApiClient.leaveTournament(id) else AaxApiClient.joinTournament(id); if (r.ok) { notice = if (joined) "Inscripción cancelada." else "Inscripción confirmada."; reload() } else notice = r.body.optString("error", "Error") } catch (e: Exception) { notice = e.message ?: "Error" } finally { busy = false } } })
+     3 -> RankingsScreen(tournaments)
+     4 -> ProfileScreen(user!!, profile, busy, notice, { scope.launch { busy = true; try { profile = AaxApiClient.profile(user?.optString("nick") ?: "").body } catch (e: Exception) { notice = e.message ?: "Error" } finally { busy = false } } }, { scope.launch { busy = true; try { val r = AaxApiClient.logout(); if (r.ok) { user = null; profile = null; authMode = true; page = 0; notice = "Sesión cerrada." } else notice = "No se pudo cerrar sesión" } finally { busy = false } } })
+     5 -> CommunityScreen()
+     6 -> SettingsScreen(user!!, { scope.launch { busy = true; try { val r = AaxApiClient.logout(); if (r.ok) { user = null; profile = null; page = 0; notice = "Sesión cerrada." } } finally { busy = false } } })
+     else -> OrganizationScreen(user!!)
+    }
+    if (busy) LinearProgressIndicator(Modifier.fillMaxWidth(), color = Cyan)
+    if (notice.isNotBlank()) Text(notice, color = if (notice.contains("Error") || notice.contains("No se pudo")) Color(0xFFFFB86C) else Cyan, modifier = Modifier.padding(top = 12.dp))
+   }
+  }
  }
- if(busy)LinearProgressIndicator(Modifier.fillMaxWidth(),color=Cyan)
- if(notice.isNotBlank())Text(notice,color=if(notice.contains("Error")||notice.contains("No se pudo"))Color(0xFFFFB86C)else Cyan,modifier=Modifier.padding(top=12.dp))
- }
-}}}
+}
 @Composable private fun Header(){Row(verticalAlignment=Alignment.CenterVertically){Text("AAX",color=Ink,fontWeight=FontWeight.Black,fontSize=18.sp,modifier=Modifier.padding(12.dp).background(Cyan, androidx.compose.foundation.shape.CutCornerShape(8.dp)));Column{Text("ACADEMIA ALIUS X",fontWeight=FontWeight.Black,letterSpacing=2.sp);Text("COMUNIDAD · JUEGO · COMPETICIÓN",color=Muted,fontSize=10.sp)}}}
 @Composable private fun AuthScreen(reg:Boolean,recovery:Boolean,nick:String,email:String,password:String,onNick:(String)->Unit,onEmail:(String)->Unit,onPassword:(String)->Unit,onMode:(Boolean)->Unit,onRecovery:(Boolean)->Unit,busy:Boolean,notice:String,clear:()->Unit,submit:()->Unit){
  Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),horizontalAlignment=Alignment.CenterHorizontally){
