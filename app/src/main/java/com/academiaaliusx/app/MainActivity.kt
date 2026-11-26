@@ -88,7 +88,9 @@ class MainActivity:ComponentActivity(){ override fun onCreate(savedInstanceState
    Spacer(Modifier.height(5.dp))
    Text(subtitle,color=Muted,fontSize=12.sp)
    Spacer(Modifier.height(12.dp))
-   Row(verticalAlignment=Alignment.CenterVertically){Button(onClick=onToggle,colors=ButtonDefaults.buttonColors(containerColor=if(registered)Color(0xFF334455)else Cyan,contentColor=if(registered)Color.White else Ink)){Text(if(registered)"Cancelar inscripción local"else"Apuntarme (local)")};Spacer(Modifier.width(8.dp));TextButton(onClick=onShare){Icon(Icons.Filled.Share,null);Text("Compartir")};if(onEdit!=null){Spacer(Modifier.width(8.dp));TextButton(onClick={editTitle=title;editing=true}){Icon(Icons.Filled.Edit,null);Text("Editar")}};if(onDelete!=null){Spacer(Modifier.width(8.dp));TextButton(onClick={confirmDelete=true}){Icon(Icons.Filled.Delete,null);Text("Eliminar")}}else{Spacer(Modifier.width(0.dp))}}
+   Button(onClick=onToggle,modifier=Modifier.fillMaxWidth(),colors=ButtonDefaults.buttonColors(containerColor=if(registered)Color(0xFF334455)else Cyan,contentColor=if(registered)Color.White else Ink)){Text(if(registered)"Cancelar inscripción local"else"Apuntarme (local)")}
+   Spacer(Modifier.height(4.dp))
+   Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceEvenly,verticalAlignment=Alignment.CenterVertically){TextButton(onClick=onShare){Icon(Icons.Filled.Share,null);Text("Compartir")};if(onEdit!=null){TextButton(onClick={editTitle=title;editing=true}){Icon(Icons.Filled.Edit,null);Text("Editar")}};if(onDelete!=null){TextButton(onClick={confirmDelete=true}){Icon(Icons.Filled.Delete,null);Text("Eliminar")}}}
   }
  }
  if(editing && onEdit!=null){
