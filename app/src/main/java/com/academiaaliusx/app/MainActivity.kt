@@ -110,6 +110,16 @@ class MainActivity:ComponentActivity(){ override fun onCreate(savedInstanceState
    catch(e:Exception){pendingRestore=null;importError=e.message?:"No se pudo leer la copia."}
   }
  }
+ var saveError by remember { mutableStateOf<String?>(null) }
+ val saveLauncher=rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")){uri->
+  if(uri!=null){
+   try{
+    val backup=LocalBackupRules.json(name,games,registrations,customEvents)
+    val output=context.contentResolver.openOutputStream(uri,"w")?:throw IllegalArgumentException("No se pudo abrir el archivo de destino.")
+    output.use{it.write(backup.toByteArray(Charsets.UTF_8))}
+   }catch(e:Exception){saveError=e.message?:"No se pudo guardar la copia."}
+  }
+ }
  SectionTitle("Perfil","Tu identidad en Alius X")
  OutlinedTextField(value=name,onValueChange={onName(PlayerProfileRules.cleanNameInput(it))},label={Text("Nombre de jugador")},supportingText={Text("${name.length}/${PlayerProfileRules.MAX_NAME_LENGTH} caracteres",color=Muted)},modifier=Modifier.fillMaxWidth(),singleLine=true,colors=OutlinedTextFieldDefaults.colors(focusedTextColor=Color.White,unfocusedTextColor=Color.White,focusedBorderColor=Cyan,focusedLabelColor=Cyan))
  Spacer(Modifier.height(20.dp))
@@ -122,6 +132,8 @@ class MainActivity:ComponentActivity(){ override fun onCreate(savedInstanceState
    Spacer(Modifier.height(6.dp))
    Text("Exporta o restaura tu perfil, juegos, inscripciones y torneos creados. La restauración reemplazará los datos locales actuales.",color=Muted,fontSize=12.sp)
    Spacer(Modifier.height(10.dp))
+   OutlinedButton(onClick={saveLauncher.launch("academia-alius-x-backup.json")},modifier=Modifier.fillMaxWidth()){Icon(Icons.Filled.Save,null);Spacer(Modifier.width(8.dp));Text("Guardar copia JSON en un archivo")}
+   Spacer(Modifier.height(8.dp))
    Button(onClick={val shareIntent=Intent(Intent.ACTION_SEND).apply{type="application/json";putExtra(Intent.EXTRA_TEXT,LocalBackupRules.json(name,games,registrations,customEvents));putExtra(Intent.EXTRA_TITLE,"Copia de seguridad Academia Alius X")};context.startActivity(Intent.createChooser(shareIntent,"Exportar copia de seguridad"))},modifier=Modifier.fillMaxWidth(),colors=ButtonDefaults.buttonColors(containerColor=Cyan,contentColor=Ink)){Icon(Icons.Filled.Share,null);Spacer(Modifier.width(8.dp));Text("Compartir copia de seguridad")}
    Spacer(Modifier.height(8.dp))
    OutlinedButton(onClick={picker.launch(arrayOf("application/json","text/*"))},modifier=Modifier.fillMaxWidth()){Icon(Icons.Filled.Restore,null);Spacer(Modifier.width(8.dp));Text("Restaurar desde archivo JSON")}
@@ -132,6 +144,9 @@ class MainActivity:ComponentActivity(){ override fun onCreate(savedInstanceState
  if(pendingRestore!=null){
   val payload=pendingRestore!!
   AlertDialog(onDismissRequest={pendingRestore=null},title={Text("Confirmar restauración")},text={Column{Text("Se importará el perfil de ${payload.playerName}.");Spacer(Modifier.height(8.dp));Text("Juegos: ${payload.games.size} · Inscripciones: ${payload.registrations.size} · Torneos creados: ${payload.createdTournaments.size}");Spacer(Modifier.height(8.dp));Text("Esto reemplazará los datos locales actuales.",color=Color(0xFFFFB86C))}},confirmButton={TextButton(onClick={onRestore(payload);pendingRestore=null}){Text("Restaurar")}},dismissButton={TextButton(onClick={pendingRestore=null}){Text("Cancelar")}})
+ }
+ if(saveError!=null){
+  AlertDialog(onDismissRequest={saveError=null},title={Text("No se pudo guardar")},text={Text(saveError?:"Error al guardar")},confirmButton={TextButton(onClick={saveError=null}){Text("Cerrar")}})
  }
  if(importError!=null){
   AlertDialog(onDismissRequest={importError=null},title={Text("No se pudo importar")},text={Text(importError?:"Archivo inválido")},confirmButton={TextButton(onClick={importError=null}){Text("Cerrar")}})
