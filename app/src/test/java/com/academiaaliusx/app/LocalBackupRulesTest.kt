@@ -35,6 +35,8 @@ class LocalBackupRulesTest {
         expectInvalid("""{"schemaVersion":1.0,"playerName":"A","games":[],"registrations":[],"createdTournaments":[]}""")
         expectInvalid("""{"schemaVersion":"1","playerName":"A","games":[],"registrations":[],"createdTournaments":[]}""")
         expectInvalid("""{"schemaVersion":1,"playerName":"A","games":[],"registrations":[],"createdTournaments":[{"id":"x","title":"Liga"},{"id":"x","title":"Otra"}]}""")
+        expectInvalid("""{"schemaVersion":1,"playerName":"A","games":[],"registrations":[],"createdTournaments":[{"id":"bx-local","title":"Torneo duplicado"}]}""")
+        expectInvalid("""{"schemaVersion":1,"playerName":"A","games":[],"registrations":["pokemon-local","pokemon-local"],"createdTournaments":[]}""")
         expectInvalid("""{"schemaVersion":1,"playerName":"A","games":[],"registrations":[],"createdTournaments":[{"id":"bad\tID","title":"Liga"}]}""")
     }
 
