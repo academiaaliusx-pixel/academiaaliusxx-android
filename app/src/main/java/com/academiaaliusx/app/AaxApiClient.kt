@@ -23,6 +23,16 @@ object AaxApiClient {
     suspend fun leaveTournament(id:String):ApiResult=request("POST","/api/leave",JSONObject().put("id",id))
     suspend fun profile(nick:String):ApiResult=request("GET","/api/profile?nick="+URLEncoder.encode(nick,"UTF-8"),null)
 
+    suspend fun standings(game:String):ApiResult=request("GET","/api/standings?game="+URLEncoder.encode(game,"UTF-8"),null)
+    suspend fun podiums():ApiResult=request("GET","/api/podiums",null)
+    suspend fun socialSearch(q:String):ApiResult=request("GET","/api/social/search?q="+URLEncoder.encode(q,"UTF-8"),null)
+    suspend fun friends():ApiResult=request("GET","/api/social/friends",null)
+    suspend fun friendRequest(uid:String):ApiResult=request("POST","/api/social/friend-request",JSONObject().put("user_id",uid))
+    suspend fun friendAccept(id:String):ApiResult=request("POST","/api/social/friend-accept",JSONObject().put("id",id))
+    suspend fun friendAction(id:String,action:String):ApiResult=request("POST","/api/social/friend-action",JSONObject().put("id",id).put("action",action))
+    suspend fun teams():ApiResult=request("GET","/api/social/teams",null)
+    suspend fun myTeam():ApiResult=request("GET","/api/social/my-team",null)
+    suspend fun blocks():ApiResult=request("GET","/api/social/blocks",null)
     private suspend fun request(method:String,path:String,payload:JSONObject?):ApiResult=withContext(Dispatchers.IO){
         val url=URL(BASE+path)
         val connection=(url.openConnection() as HttpURLConnection).apply{
