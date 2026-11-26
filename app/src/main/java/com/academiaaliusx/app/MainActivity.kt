@@ -41,6 +41,7 @@ class MainActivity:ComponentActivity(){ override fun onCreate(savedInstanceState
 @Composable private fun SectionTitle(title:String,subtitle:String){Text(title,fontSize=29.sp,fontWeight=FontWeight.Black);Spacer(Modifier.height(6.dp));Text(subtitle,color=Cyan);Spacer(Modifier.height(18.dp))}
 @Composable private fun Community(games:Set<String>){SectionTitle("Comunidad","Jugadores y juegos");Text("Vista de muestra: aún no consulta jugadores reales.",color=Muted,fontSize=12.sp);Spacer(Modifier.height(12.dp));PlayerProfileRules.availableGames.forEach{g->Card(colors=CardDefaults.cardColors(containerColor=Panel),shape=RoundedCornerShape(16.dp),modifier=Modifier.fillMaxWidth().padding(bottom=10.dp)){Column(Modifier.padding(16.dp)){Text(g,fontWeight=FontWeight.Bold,fontSize=17.sp,color=Cyan);Text(if(g in games)"Seleccionado en tu perfil" else "Explora este espacio",color=Muted,fontSize=12.sp);Text("La búsqueda online y los perfiles se incorporarán con el backend.",fontSize=12.sp)}}}}
 @Composable private fun Tournaments(regs:Set<String>,custom:List<LocalTournament>,toggle:(String)->Unit,add:(String)->Unit,remove:(String)->Unit){
+ val context=LocalContext.current
  SectionTitle("Torneos","Competiciones")
  Text("Eventos de demostración y torneos creados en este dispositivo.",color=Muted,fontSize=12.sp)
  Spacer(Modifier.height(12.dp))
@@ -73,18 +74,18 @@ class MainActivity:ComponentActivity(){ override fun onCreate(savedInstanceState
  val visible=LocalTournamentRules.visibleEvents(builtInEvents+custom,regs,createdIds,search,filter)
  visible.forEach{event->
   val isCreated=event.id in createdIds
-  TournamentCard(event.id,event.title,if(isCreated)"Evento local · solo en este dispositivo" else "Evento de demostración",event.id in regs,onDelete=if(isCreated)({remove(event.id)})else null){toggle(event.id)}
+  TournamentCard(event.id,event.title,if(isCreated)"Evento local · solo en este dispositivo" else "Evento de demostración",event.id in regs,onShare={val shareIntent=Intent(Intent.ACTION_SEND).apply{type="text/plain";putExtra(Intent.EXTRA_TEXT,LocalTournamentRules.shareText(event.title,event.id in regs,isCreated));putExtra(Intent.EXTRA_TITLE,event.title)};context.startActivity(Intent.createChooser(shareIntent,"Compartir torneo"))},onDelete=if(isCreated)({remove(event.id)})else null){toggle(event.id)}
  }
  if(visible.isEmpty()){Text("No hay torneos que coincidan con la búsqueda o el filtro.",color=Muted,fontSize=12.sp)}
 }
-@Composable private fun TournamentCard(id:String,title:String,subtitle:String,registered:Boolean,onDelete:(()->Unit)?=null,onToggle:()->Unit){
+@Composable private fun TournamentCard(id:String,title:String,subtitle:String,registered:Boolean,onShare:()->Unit,onDelete:(()->Unit)?=null,onToggle:()->Unit){
  Card(colors=CardDefaults.cardColors(containerColor=Panel),shape=RoundedCornerShape(18.dp),modifier=Modifier.fillMaxWidth().padding(bottom=12.dp)){
   Column(Modifier.padding(16.dp)){
    Text(title,fontWeight=FontWeight.Bold,fontSize=17.sp)
    Spacer(Modifier.height(5.dp))
    Text(subtitle,color=Muted,fontSize=12.sp)
    Spacer(Modifier.height(12.dp))
-   Row(verticalAlignment=Alignment.CenterVertically){Button(onClick=onToggle,colors=ButtonDefaults.buttonColors(containerColor=if(registered)Color(0xFF334455)else Cyan,contentColor=if(registered)Color.White else Ink)){Text(if(registered)"Cancelar inscripción local"else"Apuntarme (local)")};if(onDelete!=null){Spacer(Modifier.width(8.dp));TextButton(onClick=onDelete){Icon(Icons.Filled.Delete,null);Text("Eliminar")}}}
+   Row(verticalAlignment=Alignment.CenterVertically){Button(onClick=onToggle,colors=ButtonDefaults.buttonColors(containerColor=if(registered)Color(0xFF334455)else Cyan,contentColor=if(registered)Color.White)){Text(if(registered)"Cancelar inscripción local"else"Apuntarme (local)")};Spacer(Modifier.width(8.dp));TextButton(onClick=onShare){Icon(Icons.Filled.Share,null);Text("Compartir")};if(onDelete!=null){Spacer(Modifier.width(8.dp));TextButton(onClick=onDelete){Icon(Icons.Filled.Delete,null);Text("Eliminar")}}}
   }
  }
 }
