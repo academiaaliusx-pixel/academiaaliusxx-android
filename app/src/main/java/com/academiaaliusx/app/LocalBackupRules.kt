@@ -22,10 +22,15 @@ object LocalBackupRules {
         val safeName = PlayerProfileRules.displayName(name)
         return buildString {
             append("{\n  \"schemaVersion\": 1,\n  \"playerName\": \"").append(escape(safeName)).append("\",\n")
-            append("  \"games\": ").append(array(games.sorted())).append(",\n")
-            append("  \"registrations\": ").append(array(registrations.sorted())).append(",\n")
+            val safeGames = PlayerProfileRules.normalizeGames(games).sorted()
+            val safeRegistrations = registrations.asSequence()
+                .filter { it.isNotBlank() && it.length <= MAX_ID_LENGTH && it == it.trim() && it.none { ch -> Character.isISOControl(ch) } }
+                .distinct().sorted().take(MAX_REGISTRATIONS).toList()
+            val safeTournaments = LocalTournamentRules.decodeEvents(LocalTournamentRules.encodeEvents(tournaments).toSet()).sortedBy { it.id }
+            append("  \"games\": ").append(array(safeGames)).append(",\n")
+            append("  \"registrations\": ").append(array(safeRegistrations)).append(",\n")
             append("  \"createdTournaments\": [")
-            val sorted = tournaments.sortedBy { it.id }
+            val sorted = safeTournaments
             sorted.forEachIndexed { index, event ->
                 if (index > 0) append(",")
                 append("\n    { \"id\": \"").append(escape(event.id)).append("\", \"title\": \"").append(escape(LocalTournamentRules.sanitizeTitle(event.title))).append("\" }")
