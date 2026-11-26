@@ -31,7 +31,7 @@ class MainActivity:ComponentActivity(){override fun onCreate(savedInstanceState:
  var user by remember { mutableStateOf<JSONObject?>(null) }
  var page by remember { mutableIntStateOf(0) }
  var authMode by remember { mutableStateOf(false) }
- var registerMode by remember { mutableStateOf(false) }
+ var registerMode by remember { mutableStateOf(false) }; var recoveryMode by remember { mutableStateOf(false) }
  var nick by remember { mutableStateOf("") }; var email by remember { mutableStateOf("") }; var password by remember { mutableStateOf("") }
  var busy by remember { mutableStateOf(false) }; var notice by remember { mutableStateOf("") }
  var tournaments by remember { mutableStateOf(listOf<JSONObject>()) }
@@ -48,8 +48,8 @@ class MainActivity:ComponentActivity(){override fun onCreate(savedInstanceState:
  Column(Modifier.fillMaxSize().padding(pad).background(Ink).padding(horizontal=20.dp,vertical=16.dp)){
  Header()
  Spacer(Modifier.height(20.dp))
- if(user==null) AuthScreen(registerMode,nick,email,password,{nick=it},{email=it},{password=it},{registerMode=it},busy,notice,{notice=""},{ 
-   scope.launch{busy=true;notice="";try{val r=if(registerMode)AaxApiClient.register(nick,email,password) else AaxApiClient.login(nick,password);if(r.ok){notice=if(registerMode&&r.body.optBoolean("verification_required"))"Cuenta creada. Comprueba el correo para verificarla." else "Acceso correcto.";reload()}else notice=r.body.optString("error","No se pudo completar la operación.")}catch(e:Exception){notice=e.message?: "Error de conexión"}finally{busy=false}}
+ if(user==null) AuthScreen(registerMode,recoveryMode,nick,email,password,{nick=it},{email=it},{password=it},{registerMode=it},{recoveryMode=it},busy,notice,{notice=""},{ 
+   scope.launch{busy=true;notice="";try{val r=if(recoveryMode)AaxApiClient.forgotPassword(email) else if(registerMode)AaxApiClient.register(nick,email,password) else AaxApiClient.login(nick,password);if(r.ok){notice=if(recoveryMode)"Si la cuenta existe, recibirás instrucciones por correo." else if(registerMode&&r.body.optBoolean("verification_required"))"Cuenta creada. Comprueba el correo para verificarla." else "Acceso correcto.";if(!recoveryMode)reload()}else notice=r.body.optString("error","No se pudo completar la operación.")}catch(e:Exception){notice=e.message?: "Error de conexión"}finally{busy=false}}
  })
  else when(page){
   0->HomeScreen(user!!,tournaments.size,tournaments,{page=2},{page=4})
@@ -66,9 +66,17 @@ class MainActivity:ComponentActivity(){override fun onCreate(savedInstanceState:
  }
 }}}
 @Composable private fun Header(){Row(verticalAlignment=Alignment.CenterVertically){Text("AAX",color=Ink,fontWeight=FontWeight.Black,fontSize=18.sp,modifier=Modifier.padding(12.dp).background(Cyan, androidx.compose.foundation.shape.CutCornerShape(8.dp)));Column{Text("ACADEMIA ALIUS X",fontWeight=FontWeight.Black,letterSpacing=2.sp);Text("COMUNIDAD · JUEGO · COMPETICIÓN",color=Muted,fontSize=10.sp)}}}
-@Composable private fun AuthScreen(reg:Boolean,nick:String,email:String,password:String,onNick:(String)->Unit,onEmail:(String)->Unit,onPassword:(String)->Unit,onMode:(Boolean)->Unit,busy:Boolean,notice:String,clear:()->Unit,submit:()->Unit){
- Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),horizontalAlignment=Alignment.CenterHorizontally){Text(if(reg)"Crear cuenta" else "Acceder a Alius X",fontSize=28.sp,fontWeight=FontWeight.Black);Spacer(Modifier.height(16.dp));OutlinedTextField(nick,onNick,label={Text(if(reg)"Nick" else "Usuario o correo")},singleLine=true,colors=OutlinedTextFieldDefaults.colors(focusedBorderColor=Cyan,unfocusedBorderColor=Edge,cursorColor=Cyan),modifier=Modifier.fillMaxWidth());if(reg){Spacer(Modifier.height(8.dp));OutlinedTextField(email,onEmail,label={Text("Correo electrónico")},singleLine=true,modifier=Modifier.fillMaxWidth())};Spacer(Modifier.height(8.dp));OutlinedTextField(password,onPassword,label={Text("Contraseña")},singleLine=true,modifier=Modifier.fillMaxWidth());Spacer(Modifier.height(16.dp));Button(onClick=submit,shape=androidx.compose.foundation.shape.CutCornerShape(10.dp),colors=ButtonDefaults.buttonColors(containerColor=Cyan,contentColor=Ink),enabled=!busy&&nick.isNotBlank()&&password.length>=8&&( !reg||email.isNotBlank()),modifier=Modifier.fillMaxWidth().height(52.dp)){Text(if(reg)"Registrarme" else "Iniciar sesión")};TextButton(onClick={onMode(!reg);clear()}){Text(if(reg)"Ya tengo cuenta · Entrar" else "Crear una cuenta")};Text("Contraseña: mínimo 8 caracteres",color=Muted,fontSize=12.sp)}
-}
+@Composable private fun AuthScreen(reg:Boolean,recovery:Boolean,nick:String,email:String,password:String,onNick:(String)->Unit,onEmail:(String)->Unit,onPassword:(String)->Unit,onMode:(Boolean)->Unit,onRecovery:(Boolean)->Unit,busy:Boolean,notice:String,clear:()->Unit,submit:()->Unit){
+ Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),horizontalAlignment=Alignment.CenterHorizontally){
+ Text(if(recovery)"Recuperar contraseña" else if(reg)"Crear cuenta" else "Acceder a Alius X",fontSize=28.sp,fontWeight=FontWeight.Black);Spacer(Modifier.height(16.dp))
+ OutlinedTextField(if(reg||recovery)email else nick,if(reg||recovery)onEmail else onNick,label={Text(if(reg||recovery)"Correo electrónico" else "Usuario o correo")},singleLine=true,modifier=Modifier.fillMaxWidth())
+ if(reg||!recovery){Spacer(Modifier.height(8.dp));if(reg)OutlinedTextField(nick,onNick,label={Text("Nick")},singleLine=true,modifier=Modifier.fillMaxWidth());OutlinedTextField(password,onPassword,label={Text("Contraseña")},singleLine=true,modifier=Modifier.fillMaxWidth())}
+ Spacer(Modifier.height(16.dp));Button(onClick=submit,enabled=!busy&&(if(recovery)email.contains("@") else nick.isNotBlank()&&password.length>=8&&(!reg||email.contains("@"))),modifier=Modifier.fillMaxWidth().height(52.dp)){Text(if(recovery)"Enviar instrucciones" else if(reg)"Registrarme" else "Iniciar sesión")}
+ if(!recovery&&!reg)TextButton(onClick={onRecovery(true);clear()}){Text("¿Olvidaste tu contraseña?")}
+ TextButton(onClick={onMode(!reg);onRecovery(false);clear()}){Text(if(reg)"Ya tengo cuenta · Entrar" else "Crear una cuenta")}
+ if(recovery)TextButton(onClick={onRecovery(false);clear()}){Text("Volver al acceso")}
+ Text("Contraseña: mínimo 8 caracteres",color=Muted,fontSize=12.sp)
+ }}
 @Composable private fun HomeScreen(user:JSONObject,count:Int,tournaments:List<JSONObject>,toTournaments:()->Unit,toProfile:()->Unit){
  Column(Modifier.verticalScroll(rememberScrollState())){Text("▰  TU UNIVERSO GAMER",color=Cyan,fontSize=13.sp,fontWeight=FontWeight.Bold,letterSpacing=2.sp);Spacer(Modifier.height(8.dp));Text("¡Bienvenido, "+user.optString("nick")+"!",fontSize=30.sp,fontWeight=FontWeight.Black,lineHeight=34.sp);Spacer(Modifier.height(10.dp));Text("Ahora conectado a Academia Alius X.",color=Muted,fontSize=17.sp);Spacer(Modifier.height(20.dp));Card(colors=CardDefaults.cardColors(containerColor=Panel),shape=androidx.compose.foundation.shape.CutCornerShape(14.dp),border=androidx.compose.foundation.BorderStroke(1.dp,Edge)){Column(Modifier.padding(18.dp)){Text(count.toString(),fontSize=32.sp,color=Cyan,fontWeight=FontWeight.Black);Text("Torneos disponibles/registrados en el servidor")}};Spacer(Modifier.height(12.dp));Button(onClick=toTournaments,shape=androidx.compose.foundation.shape.CutCornerShape(12.dp),colors=ButtonDefaults.buttonColors(containerColor=Cyan,contentColor=Ink),modifier=Modifier.fillMaxWidth().height(54.dp)){Icon(Icons.Filled.EmojiEvents,null);Spacer(Modifier.width(8.dp));Text("Explorar torneos online")};Spacer(Modifier.height(8.dp));OutlinedButton(onClick=toProfile,shape=androidx.compose.foundation.shape.CutCornerShape(12.dp),border=androidx.compose.foundation.BorderStroke(1.dp,Edge),modifier=Modifier.fillMaxWidth().height(52.dp)){Icon(Icons.Filled.Person,null);Spacer(Modifier.width(8.dp));Text("Ver mi perfil")}}
 }
