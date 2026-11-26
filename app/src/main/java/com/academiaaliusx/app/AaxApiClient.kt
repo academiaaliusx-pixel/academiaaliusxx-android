@@ -16,7 +16,7 @@ object AaxApiClient {
 
     suspend fun me():ApiResult=request("GET","/api/me",null)
     suspend fun login(identifier:String,password:String):ApiResult=request("POST","/api/login",JSONObject().put("id",identifier).put("password",password))
-    suspend fun register(nick:String,email:String,password:String):ApiResult=request("POST","/api/register",JSONObject().put("nick",nick).put("email",email).put("password",password))\n    suspend fun forgotPassword(email:String):ApiResult=request("POST","/api/forgot-password",JSONObject().put("email",email))\n    suspend fun resendVerification(email:String):ApiResult=request("POST","/api/resend-verification",JSONObject().put("email",email))\n    suspend fun resetPassword(token:String,password:String):ApiResult=request("POST","/api/reset-password",JSONObject().put("token",token).put("password",password))\n    suspend fun uploadAvatar(data:String):ApiResult=request("POST","/api/avatar",JSONObject().put("data",data))\n    suspend fun removeAvatar():ApiResult=request("POST","/api/avatar",JSONObject().put("remove",true))\n    suspend fun changePassword(current:String,newPassword:String):ApiResult=request("POST","/api/password",JSONObject().put("current_password",current).put("password",newPassword))
+    suspend fun register(nick:String,email:String,password:String):ApiResult=request("POST","/api/register",JSONObject().put("nick",nick).put("email",email).put("password",password))\n    suspend fun forgotPassword(email:String):ApiResult=request("POST","/api/forgot-password",JSONObject().put("email",email))\n    suspend fun resendVerification(email:String):ApiResult=request("POST","/api/resend-verification",JSONObject().put("email",email))\n    suspend fun resetPassword(token:String,password:String):ApiResult=request("POST","/api/reset-password",JSONObject().put("token",token).put("password",password))\n    suspend fun uploadAvatar(data:String):ApiResult=request("POST","/api/avatar",JSONObject().put("data",data))\n    suspend fun removeAvatar():ApiResult=request("POST","/api/avatar",JSONObject().put("remove",true))\n    suspend fun changePassword(current:String,newPassword:String):ApiResult=request("POST","/api/password",JSONObject().put("old",current).put("new",newPassword))
     suspend fun logout():ApiResult=request("POST","/api/logout",JSONObject())
     suspend fun tournaments():ApiResult=request("GET","/api/tournaments",null)
     suspend fun joinTournament(id:String):ApiResult=request("POST","/api/join",JSONObject().put("id",id))
@@ -45,6 +45,13 @@ object AaxApiClient {
     suspend fun blockAction(id:String,action:String):ApiResult=request("POST","/api/social/block-action",JSONObject().put("user_id",id).put("action",action))
     suspend fun setAvatarFrame(frame:String):ApiResult=request("POST","/api/avatar-frame",JSONObject().put("frame",frame))
     suspend fun challongeTest():ApiResult=request("POST","/api/admin/challonge-test",JSONObject())
+    suspend fun challongeRoster(id:String):ApiResult=request("POST","/api/admin/challonge-roster",JSONObject().put("id",id))
+    suspend fun challongeState(id:String,state:String):ApiResult=request("POST","/api/admin/challonge-state",JSONObject().put("id",id).put("state",state))
+    suspend fun challongeMatches(id:String):ApiResult=request("POST","/api/admin/challonge-matches",JSONObject().put("id",id))
+    suspend fun challongeSync(id:String,apply:Boolean=false,replace:Boolean=false):ApiResult=request("POST","/api/admin/challonge-sync",JSONObject().put("id",id).put("apply",apply).put("replace",replace))
+    suspend fun challongeLink(id:String,url:String):ApiResult=request("POST","/api/admin/challonge-link",JSONObject().put("id",id).put("url",url))
+    suspend fun verifyEmail(token:String):ApiResult=request("POST","/api/verify-email",JSONObject().put("token",token))
+    suspend fun deleteAccount(password:String):ApiResult=request("POST","/api/delete-account",JSONObject().put("password",password))
     private suspend fun request(method:String,path:String,payload:JSONObject?):ApiResult=withContext(Dispatchers.IO){
         val url=URL(BASE+path)
         val connection=(url.openConnection() as HttpURLConnection).apply{
