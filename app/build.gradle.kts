@@ -13,8 +13,8 @@ android {
         applicationId = "com.academiaaliusx.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 9
-        versionName = "1.0.8-native"
+        versionCode = 10
+        versionName = "1.0.9-native"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
