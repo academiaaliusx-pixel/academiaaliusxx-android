@@ -13,8 +13,8 @@ android {
         applicationId = "com.academiaaliusx.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 16
-        versionName = "1.0.15-native"
+        versionCode = 17
+        versionName = "1.0.16-integration"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -39,5 +39,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.navigation:navigation-compose:2.8.5")
     implementation("com.google.code.gson:gson:2.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0" )
     testImplementation("junit:junit:4.13.2")
 }
