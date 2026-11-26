@@ -2,6 +2,7 @@ package com.academiaaliusx.app
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertSame
 import org.junit.Test
 
 class LocalTournamentRulesTest {
@@ -61,6 +62,12 @@ class LocalTournamentRulesTest {
 
     @Test fun ignoresDuplicateIdsWhenDecoding() {
         assertEquals(listOf(LocalTournament("a", "Liga")), LocalTournamentRules.decodeEvents(setOf("a\tLiga", "a\tCopa")))
+    }
+
+    @Test fun sortsEventsAlphabeticallyWithoutMutatingOriginalOrderWhenDisabled() {
+        val source = listOf(LocalTournament("a", "Pokémon"), LocalTournament("b", "Beyblade X"), LocalTournament("c", "Inazuma Eleven"))
+        assertEquals(listOf(source[1], source[2], source[0]), LocalTournamentRules.sortByTitle(source, true))
+        assertSame(source, LocalTournamentRules.sortByTitle(source, false))
     }
 
     @Test fun shareTextClearlyLabelsLocalAndDemoEvents() {

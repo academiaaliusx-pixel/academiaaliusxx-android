@@ -48,6 +48,7 @@ class MainActivity:ComponentActivity(){ override fun onCreate(savedInstanceState
  var title by remember { mutableStateOf("") }
  var search by remember { mutableStateOf("") }
  var filter by remember { mutableStateOf("all") }
+ var alphabetical by remember { mutableStateOf(true) }
  Card(colors=CardDefaults.cardColors(containerColor=Panel),shape=RoundedCornerShape(18.dp),modifier=Modifier.fillMaxWidth().padding(bottom=16.dp)){
   Column(Modifier.padding(16.dp)){
    Text("Crear torneo local",fontWeight=FontWeight.Bold,fontSize=18.sp,color=Cyan)
@@ -67,12 +68,14 @@ class MainActivity:ComponentActivity(){ override fun onCreate(savedInstanceState
   FilterChip(selected=filter=="all",onClick={filter="all"},label={Text("Todos")})
   FilterChip(selected=filter=="registered",onClick={filter="registered"},label={Text("Inscritos")})
   FilterChip(selected=filter=="created",onClick={filter="created"},label={Text("Creados")})
+  FilterChip(selected=alphabetical,onClick={alphabetical=!alphabetical},label={Text("A-Z")})
  }
  Spacer(Modifier.height(12.dp))
  val builtInEvents=listOf(LocalTournament("bx-local","Beyblade X · Arena abierta"),LocalTournament("pokemon-local","Pokémon · Liga amistosa"),LocalTournament("ie-local","Inazuma Eleven · Copa"))
  val createdIds=custom.map{it.id}.toSet()
  val visible=LocalTournamentRules.visibleEvents(builtInEvents+custom,regs,createdIds,search,filter)
- visible.forEach{event->
+ val displayed=LocalTournamentRules.sortByTitle(visible,alphabetical)
+ displayed.forEach{event->
   val isCreated=event.id in createdIds
   TournamentCard(event.id,event.title,if(isCreated)"Evento local · solo en este dispositivo" else "Evento de demostración",event.id in regs,onShare={val shareIntent=Intent(Intent.ACTION_SEND).apply{type="text/plain";putExtra(Intent.EXTRA_TEXT,LocalTournamentRules.shareText(event.title,event.id in regs,isCreated));putExtra(Intent.EXTRA_TITLE,event.title)};context.startActivity(Intent.createChooser(shareIntent,"Compartir torneo"))},onEdit=if(isCreated)({newTitle->edit(event.id,newTitle)})else null,onDelete=if(isCreated)({remove(event.id)})else null){toggle(event.id)}
  }

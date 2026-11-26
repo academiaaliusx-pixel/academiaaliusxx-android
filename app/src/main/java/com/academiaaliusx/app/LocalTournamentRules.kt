@@ -1,6 +1,7 @@
 package com.academiaaliusx.app
 
 import java.lang.Character
+import java.util.Locale
 
 data class LocalTournament(val id: String, val title: String)
 
@@ -59,6 +60,9 @@ object LocalTournamentRules {
             matchesMode && (normalizedQuery.isBlank() || event.title.contains(normalizedQuery, ignoreCase = true))
         }
     }
+
+    fun sortByTitle(events: List<LocalTournament>, alphabetical: Boolean): List<LocalTournament> =
+        if (alphabetical) events.sortedBy { it.title.lowercase(Locale.ROOT) } else events
 
     fun encodeEvents(events: List<LocalTournament>): List<String> =
         events.filter { it.id.isNotBlank() && it.id.length <= MAX_ID_LENGTH && it.id == it.id.trim() && it.id.none { ch -> Character.isISOControl(ch) } }.take(MAX_CREATED_TOURNAMENTS).map { it.id + "\t" + sanitizeTitle(it.title) }.filter { it.substringAfter("\t").isNotBlank() }
