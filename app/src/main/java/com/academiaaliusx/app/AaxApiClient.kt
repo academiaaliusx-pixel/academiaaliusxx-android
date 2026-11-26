@@ -43,7 +43,8 @@ object AaxApiClient {
     suspend fun teamRespond(id:String,accept:Boolean):ApiResult=request("POST","/api/social/team-respond",JSONObject().put("request_id",id).put("accept",accept))
     suspend fun blockUser(id:String):ApiResult=request("POST","/api/social/block",JSONObject().put("user_id",id))
     suspend fun blockAction(id:String,action:String):ApiResult=request("POST","/api/social/block-action",JSONObject().put("user_id",id).put("action",action))
-    suspend fun setAvatarFrame(frame:String):ApiResult=request("POST","/api/avatar-frame",JSONObject().put("frame",frame))\n    suspend fun challongeTest():ApiResult=request("POST","/api/admin/challonge-test",JSONObject())
+    suspend fun setAvatarFrame(frame:String):ApiResult=request("POST","/api/avatar-frame",JSONObject().put("frame",frame))
+    suspend fun challongeTest():ApiResult=request("POST","/api/admin/challonge-test",JSONObject())
     private suspend fun request(method:String,path:String,payload:JSONObject?):ApiResult=withContext(Dispatchers.IO){
         val url=URL(BASE+path)
         val connection=(url.openConnection() as HttpURLConnection).apply{
