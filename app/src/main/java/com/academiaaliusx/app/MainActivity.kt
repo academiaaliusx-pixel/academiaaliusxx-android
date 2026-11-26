@@ -79,14 +79,18 @@ class MainActivity:ComponentActivity(){ override fun onCreate(savedInstanceState
  if(visible.isEmpty()){Text("No hay torneos que coincidan con la búsqueda o el filtro.",color=Muted,fontSize=12.sp)}
 }
 @Composable private fun TournamentCard(id:String,title:String,subtitle:String,registered:Boolean,onShare:()->Unit,onDelete:(()->Unit)?=null,onToggle:()->Unit){
+ var confirmDelete by remember(id) { mutableStateOf(false) }
  Card(colors=CardDefaults.cardColors(containerColor=Panel),shape=RoundedCornerShape(18.dp),modifier=Modifier.fillMaxWidth().padding(bottom=12.dp)){
   Column(Modifier.padding(16.dp)){
    Text(title,fontWeight=FontWeight.Bold,fontSize=17.sp)
    Spacer(Modifier.height(5.dp))
    Text(subtitle,color=Muted,fontSize=12.sp)
    Spacer(Modifier.height(12.dp))
-   Row(verticalAlignment=Alignment.CenterVertically){Button(onClick=onToggle,colors=ButtonDefaults.buttonColors(containerColor=if(registered)Color(0xFF334455)else Cyan,contentColor=if(registered)Color.White else Ink)){Text(if(registered)"Cancelar inscripción local"else"Apuntarme (local)")};Spacer(Modifier.width(8.dp));TextButton(onClick=onShare){Icon(Icons.Filled.Share,null);Text("Compartir")};if(onDelete!=null){Spacer(Modifier.width(8.dp));TextButton(onClick=onDelete){Icon(Icons.Filled.Delete,null);Text("Eliminar")}}else{Spacer(Modifier.width(0.dp))}}
+   Row(verticalAlignment=Alignment.CenterVertically){Button(onClick=onToggle,colors=ButtonDefaults.buttonColors(containerColor=if(registered)Color(0xFF334455)else Cyan,contentColor=if(registered)Color.White else Ink)){Text(if(registered)"Cancelar inscripción local"else"Apuntarme (local)")};Spacer(Modifier.width(8.dp));TextButton(onClick=onShare){Icon(Icons.Filled.Share,null);Text("Compartir")};if(onDelete!=null){Spacer(Modifier.width(8.dp));TextButton(onClick={confirmDelete=true}){Icon(Icons.Filled.Delete,null);Text("Eliminar")}}else{Spacer(Modifier.width(0.dp))}}
   }
+ }
+ if(confirmDelete && onDelete!=null){
+  AlertDialog(onDismissRequest={confirmDelete=false},title={Text("Eliminar torneo")},text={Text("¿Eliminar \"$title\" de este dispositivo? También se quitará la inscripción local asociada.")},confirmButton={TextButton(onClick={onDelete();confirmDelete=false}){Text("Eliminar")}},dismissButton={TextButton(onClick={confirmDelete=false}){Text("Cancelar")}})
  }
 }
 @Composable private fun Profile(name:String,games:Set<String>,registrations:Set<String>,customEvents:List<LocalTournament>,onName:(String)->Unit,onGames:(Set<String>)->Unit,onRestore:(LocalBackupPayload)->Unit){
