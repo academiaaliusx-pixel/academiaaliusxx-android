@@ -49,10 +49,13 @@ class MainActivity:ComponentActivity(){ override fun onCreate(savedInstanceState
  Card(colors=CardDefaults.cardColors(containerColor=Panel),shape=RoundedCornerShape(18.dp),modifier=Modifier.fillMaxWidth().padding(bottom=16.dp)){
   Column(Modifier.padding(16.dp)){
    Text("Crear torneo local",fontWeight=FontWeight.Bold,fontSize=18.sp,color=Cyan)
+   Spacer(Modifier.height(6.dp))
+   Text("${custom.size}/${LocalTournamentRules.MAX_CREATED_TOURNAMENTS} torneos creados en este dispositivo",color=Muted,fontSize=12.sp)
    Spacer(Modifier.height(8.dp))
    OutlinedTextField(value=title,onValueChange={title=LocalTournamentRules.cleanTitleInput(it)},label={Text("Nombre del torneo")},placeholder={Text("Ej. Liga del sábado")},modifier=Modifier.fillMaxWidth(),singleLine=true,colors=OutlinedTextFieldDefaults.colors(focusedTextColor=Color.White,unfocusedTextColor=Color.White,focusedBorderColor=Cyan,focusedLabelColor=Cyan))
    Spacer(Modifier.height(10.dp))
-   Button(onClick={add(title);title=""},enabled=LocalTournamentRules.validTitle(title),modifier=Modifier.fillMaxWidth(),colors=ButtonDefaults.buttonColors(containerColor=Cyan,contentColor=Ink)){Text("Crear evento")}
+   Button(onClick={add(title);title=""},enabled=LocalTournamentRules.validTitle(title)&&custom.size<LocalTournamentRules.MAX_CREATED_TOURNAMENTS,modifier=Modifier.fillMaxWidth(),colors=ButtonDefaults.buttonColors(containerColor=Cyan,contentColor=Ink)){Text("Crear evento")}
+   if(custom.size>=LocalTournamentRules.MAX_CREATED_TOURNAMENTS){Text("Has alcanzado el límite de torneos locales. Elimina uno para crear otro.",color=Color(0xFFFFB86C),fontSize=11.sp)}
    Text("Solo se guarda en este móvil; aún no se publica online.",color=Muted,fontSize=11.sp)
   }
  }
