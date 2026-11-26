@@ -75,11 +75,13 @@ class MainActivity:ComponentActivity(){ override fun onCreate(savedInstanceState
  val createdIds=custom.map{it.id}.toSet()
  val visible=LocalTournamentRules.visibleEvents(builtInEvents+custom,regs,createdIds,search,filter)
  val displayed=LocalTournamentRules.sortByTitle(visible,alphabetical)
+ Text(LocalTournamentRules.resultSummary(displayed.size),color=Muted,fontSize=12.sp)
+ Spacer(Modifier.height(8.dp))
  displayed.forEach{event->
   val isCreated=event.id in createdIds
   TournamentCard(event.id,event.title,if(isCreated)"Evento local · solo en este dispositivo" else "Evento de demostración",event.id in regs,onShare={val shareIntent=Intent(Intent.ACTION_SEND).apply{type="text/plain";putExtra(Intent.EXTRA_TEXT,LocalTournamentRules.shareText(event.title,event.id in regs,isCreated));putExtra(Intent.EXTRA_TITLE,event.title)};context.startActivity(Intent.createChooser(shareIntent,"Compartir torneo"))},onEdit=if(isCreated)({newTitle->edit(event.id,newTitle)})else null,onDelete=if(isCreated)({remove(event.id)})else null){toggle(event.id)}
  }
- if(visible.isEmpty()){Text("No hay torneos que coincidan con la búsqueda o el filtro.",color=Muted,fontSize=12.sp)}
+ if(displayed.isEmpty()){Text("Prueba a cambiar el filtro o la búsqueda.",color=Muted,fontSize=12.sp)}
 }
 @Composable private fun TournamentCard(id:String,title:String,subtitle:String,registered:Boolean,onShare:()->Unit,onEdit:((String)->Unit)?=null,onDelete:(()->Unit)?=null,onToggle:()->Unit){
  var confirmDelete by remember(id) { mutableStateOf(false) }

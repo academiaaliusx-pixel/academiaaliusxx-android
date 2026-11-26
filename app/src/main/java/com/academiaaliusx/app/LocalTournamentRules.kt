@@ -64,6 +64,12 @@ object LocalTournamentRules {
     fun sortByTitle(events: List<LocalTournament>, alphabetical: Boolean): List<LocalTournament> =
         if (alphabetical) events.sortedBy { it.title.lowercase(Locale.ROOT) } else events
 
+    fun resultSummary(count: Int): String = when (count) {
+        0 -> "No se encontraron torneos"
+        1 -> "1 torneo encontrado"
+        else -> "$count torneos encontrados"
+    }
+
     fun encodeEvents(events: List<LocalTournament>): List<String> =
         events.filter { it.id.isNotBlank() && it.id.length <= MAX_ID_LENGTH && it.id == it.id.trim() && it.id.none { ch -> Character.isISOControl(ch) } }.take(MAX_CREATED_TOURNAMENTS).map { it.id + "\t" + sanitizeTitle(it.title) }.filter { it.substringAfter("\t").isNotBlank() }
 
