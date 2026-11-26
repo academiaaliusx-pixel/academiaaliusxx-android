@@ -56,6 +56,11 @@ class LocalTournamentRulesTest {
         assertEquals(listOf(LocalTournament("a", "Liga")), LocalTournamentRules.decodeEvents(setOf("a\tLiga", "a\tCopa")))
     }
 
+    @Test fun shareTextClearlyLabelsLocalAndDemoEvents() {
+        assertEquals("Academia Alius X\\n\\nLiga\\nTorneo local creado en este dispositivo\\nInscripción guardada localmente.\\n\\nEste evento no está publicado ni tiene inscripción online.", LocalTournamentRules.shareText(" Liga ", true, true))
+        assertEquals("Academia Alius X\\n\\nCopa\\nEvento de demostración\\nAún no tienes una inscripción local.\\n\\nEste evento no está publicado ni tiene inscripción online.", LocalTournamentRules.shareText("Copa", false, false))
+    }
+
     @Test fun filtersByRegistrationCreationAndSearch() {
         val events = listOf(LocalTournament("a", "Beyblade X"), LocalTournament("b", "Pokémon"), LocalTournament("c", "Liga del sábado"))
         val registered = setOf("b", "c")
