@@ -8,8 +8,11 @@ object PlayerProfileRules {
 
     val availableGames = listOf("Beyblade X", "Pokémon", "Inazuma Eleven", "Otros")
 
-    fun sanitizeName(input: String): String =
-        input.filterNot { Character.isISOControl(it) }.trim().take(MAX_NAME_LENGTH)
+    // Keep trailing spaces during editing; trim only when normalizing a saved/display name.
+    fun cleanNameInput(input: String): String =
+        input.filterNot { Character.isISOControl(it) }.take(MAX_NAME_LENGTH)
+
+    fun sanitizeName(input: String): String = cleanNameInput(input).trim()
 
     fun displayName(input: String): String = sanitizeName(input).ifBlank { DEFAULT_NAME }
 

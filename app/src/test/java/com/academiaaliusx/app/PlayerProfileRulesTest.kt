@@ -8,6 +8,11 @@ class PlayerProfileRulesTest {
         assertEquals("Taylor", PlayerProfileRules.sanitizeName("  Taylor\u0000\n "))
     }
 
+    @Test fun preservesTrailingSpaceDuringEditing() {
+        assertEquals("Alius ", PlayerProfileRules.cleanNameInput("Alius "))
+        assertEquals("Alius", PlayerProfileRules.sanitizeName("Alius "))
+    }
+
     @Test fun limitsNameLength() {
         assertEquals("123456789012345678901234", PlayerProfileRules.sanitizeName("123456789012345678901234567890"))
     }
