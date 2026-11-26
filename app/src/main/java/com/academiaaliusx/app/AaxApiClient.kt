@@ -24,7 +24,7 @@ object AaxApiClient {
         request("POST", "/api/login", JSONObject().put("id", identifier).put("password", password))
 
     suspend fun logout(): ApiResult = request("POST", "/api/logout", JSONObject())
-
+\n    suspend fun tournaments(): ApiResult = request("GET", "/api/tournaments", null)\n\n    suspend fun joinTournament(id: String): ApiResult = request("POST", "/api/join", JSONObject().put("id", id))\n\n    suspend fun leaveTournament(id: String): ApiResult = request("POST", "/api/leave", JSONObject().put("id", id))\n\n    suspend fun profile(nick: String): ApiResult = request("GET", "/api/profile?nick=" + java.net.URLEncoder.encode(nick, "UTF-8"), null)\n
     suspend fun register(nick: String, email: String, password: String): ApiResult =
         request("POST", "/api/register", JSONObject().put("nick", nick).put("email", email).put("password", password))
 
