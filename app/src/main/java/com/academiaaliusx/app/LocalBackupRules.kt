@@ -21,13 +21,15 @@ object LocalBackupRules {
 
     fun json(name: String, games: Set<String>, registrations: Set<String>, tournaments: List<LocalTournament>): String {
         val safeName = PlayerProfileRules.displayName(name)
+        val safeTournaments = LocalTournamentRules.decodeEvents(LocalTournamentRules.encodeEvents(tournaments).toSet()).sortedBy { it.id }
+        val validEventIds = BUILT_IN_EVENT_IDS + safeTournaments.map { it.id }
         return buildString {
             append("{\n  \"schemaVersion\": 1,\n  \"playerName\": \"").append(escape(safeName)).append("\",\n")
             val safeGames = PlayerProfileRules.normalizeGames(games).sorted()
             val safeRegistrations = registrations.asSequence()
                 .filter { it.isNotBlank() && it.length <= MAX_ID_LENGTH && it == it.trim() && it.none { ch -> Character.isISOControl(ch) } }
+                .filter { it in validEventIds }
                 .distinct().sorted().take(MAX_REGISTRATIONS).toList()
-            val safeTournaments = LocalTournamentRules.decodeEvents(LocalTournamentRules.encodeEvents(tournaments).toSet()).sortedBy { it.id }
             append("  \"games\": ").append(array(safeGames)).append(",\n")
             append("  \"registrations\": ").append(array(safeRegistrations)).append(",\n")
             append("  \"createdTournaments\": [")
@@ -83,6 +85,8 @@ object LocalBackupRules {
         }
         require(events.map { it.id }.distinct().size == events.size) { "La copia contiene identificadores de torneo duplicados." }
         require(events.none { it.id in BUILT_IN_EVENT_IDS }) { "La copia contiene un identificador reservado para un torneo de muestra." }
+        val validEventIds = BUILT_IN_EVENT_IDS + events.map { it.id }
+        require(registrations.all { it in validEventIds }) { "La copia contiene inscripciones a eventos que no existen." }
         return LocalBackupPayload(PlayerProfileRules.displayName(playerName), games, registrations, events)
     }
 
