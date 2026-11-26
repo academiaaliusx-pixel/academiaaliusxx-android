@@ -33,6 +33,17 @@ object AaxApiClient {
     suspend fun teams():ApiResult=request("GET","/api/social/teams",null)
     suspend fun myTeam():ApiResult=request("GET","/api/social/my-team",null)
     suspend fun blocks():ApiResult=request("GET","/api/social/blocks",null)
+    suspend fun teamDetail(id:String):ApiResult=request("GET","/api/social/team-detail?id="+URLEncoder.encode(id,"UTF-8"),null)
+    suspend fun teamCreate(payload:JSONObject):ApiResult=request("POST","/api/social/team-create",payload)
+    suspend fun teamJoin(id:String,message:String=""):ApiResult=request("POST","/api/social/team-join",JSONObject().put("team_id",id).put("message",message))
+    suspend fun teamManage(payload:JSONObject):ApiResult=request("POST","/api/social/team-manage",payload)
+    suspend fun myTeamRequests():ApiResult=request("GET","/api/social/my-team-requests",null)
+    suspend fun teamRequestCancel(id:String):ApiResult=request("POST","/api/social/team-request-cancel",JSONObject().put("request_id",id))
+    suspend fun teamRequests():ApiResult=request("GET","/api/social/team-requests",null)
+    suspend fun teamRespond(id:String,accept:Boolean):ApiResult=request("POST","/api/social/team-respond",JSONObject().put("request_id",id).put("accept",accept))
+    suspend fun blockUser(id:String):ApiResult=request("POST","/api/social/block",JSONObject().put("user_id",id))
+    suspend fun blockAction(id:String,action:String):ApiResult=request("POST","/api/social/block-action",JSONObject().put("user_id",id).put("action",action))
+    suspend fun setAvatarFrame(frame:String):ApiResult=request("POST","/api/avatar-frame",JSONObject().put("frame",frame))
     private suspend fun request(method:String,path:String,payload:JSONObject?):ApiResult=withContext(Dispatchers.IO){
         val url=URL(BASE+path)
         val connection=(url.openConnection() as HttpURLConnection).apply{
