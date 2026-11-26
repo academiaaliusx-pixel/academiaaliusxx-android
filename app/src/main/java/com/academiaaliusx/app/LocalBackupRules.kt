@@ -47,7 +47,7 @@ object LocalBackupRules {
         }
         require(root.isJsonObject) { "El archivo debe contener un objeto JSON." }
         val obj = root.asJsonObject
-        require(obj.get("schemaVersion")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isNumber }?.asInt == 1) {
+        require(obj.get("schemaVersion")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isNumber }?.asJsonPrimitive?.asString == "1") {
             "Versión de copia no compatible."
         }
         val playerName = obj.get("playerName")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString
