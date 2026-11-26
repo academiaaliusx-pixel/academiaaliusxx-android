@@ -27,6 +27,14 @@ object LocalTournamentRules {
     fun remove(current: List<LocalTournament>, id: String): List<LocalTournament> =
         current.filterNot { it.id == id }
 
+    fun shareText(title: String, registered: Boolean, created: Boolean): String = buildString {
+        append("Academia Alius X\\n\\n")
+        append(sanitizeTitle(title)).append("\\n")
+        append(if (created) "Torneo local creado en este dispositivo" else "Evento de demostración").append("\\n")
+        append(if (registered) "Inscripción guardada localmente." else "Aún no tienes una inscripción local.").append("\\n\\n")
+        append("Este evento no está publicado ni tiene inscripción online.")
+    }
+
     fun visibleEvents(
         events: List<LocalTournament>,
         registrations: Set<String>,
