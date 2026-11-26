@@ -92,7 +92,21 @@ class MainActivity:ComponentActivity(){override fun onCreate(savedInstanceState:
  if(frames!=null){Text("Marcos de avatar",fontWeight=FontWeight.Bold);Text("Selecciona un marco desbloqueado.",color=Muted);for(i in 0 until frames.length()){val fr=frames.optJSONObject(i)?:continue;val id=fr.optString("id");val unlocked=(0 until (unlockedIds?.length()?:0)).any{unlockedIds?.optString(it)==id};AaxPanel{Text(fr.optString("name",id),fontWeight=FontWeight.Bold);Text(if(unlocked)"Desbloqueado" else "Bloqueado",color=if(unlocked)Cyan else Muted);Button(enabled=unlocked&&!busy,onClick={scope.launch{try{val r=AaxApiClient.setAvatarFrame(id);msg=if(r.ok)"Marco actualizado"else r.body.optString("error","Error")}catch(e:Exception){msg=e.message?: "Error"}}}){Text("Equipar")}}}}
  if(msg.isNotBlank())Text(msg,color=Cyan);Button(onClick=refresh,enabled=!busy,modifier=Modifier.fillMaxWidth()){Text("Actualizar perfil")};OutlinedButton(onClick=logout,enabled=!busy,modifier=Modifier.fillMaxWidth()){Text("Cerrar sesión")}}
 }
-@Composable private fun GamesScreen(tournaments:List<JSONObject>){Column(Modifier.verticalScroll(rememberScrollState())){Text("JUEGOS",fontSize=28.sp,fontWeight=FontWeight.Black);Text("Universos activos en la comunidad",color=Cyan);val games=tournaments.map{it.optString("game")}.filter{it.isNotBlank()}.distinct();(games.ifEmpty{listOf("Beyblade X","Inazuma Eleven","Pokémon","Bakugan","Yo-kai Watch")}).forEach{g->AaxPanel{Text(g,fontSize=20.sp,fontWeight=FontWeight.Bold);Text("Torneos y actividad",color=Muted)}}}}
+@Composable private fun GamesScreen(tournaments:List<JSONObject>){
+ val catalog=listOf("Beyblade X","Inazuma Eleven","Pokémon","Bakugan","Yo-kai Watch")
+ var selected by remember{mutableStateOf(catalog.first())}
+ var query by remember{mutableStateOf("")}
+ val filtered=catalog.filter{it.contains(query,true)}
+ val gameTournaments=tournaments.filter{it.optString("game").equals(selected,true)}
+ Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
+ Text("JUEGOS",fontSize=28.sp,fontWeight=FontWeight.Black);Text("Catálogo de la comunidad AAX",color=Cyan)
+ OutlinedTextField(query,{query=it},label={Text("Buscar juego")},modifier=Modifier.fillMaxWidth())
+ filtered.forEach{g->Card(colors=CardDefaults.cardColors(containerColor=if(g==selected)Color(0xFF183C46) else Panel),border=androidx.compose.foundation.BorderStroke(1.dp,if(g==selected)Cyan else Edge),modifier=Modifier.fillMaxWidth().padding(vertical=5.dp)){Column(Modifier.padding(14.dp)){Text(g,fontSize=20.sp,fontWeight=FontWeight.Bold);Text(tournaments.count{it.optString("game").equals(g,true)}.toString()+" torneos en el listado",color=Muted);TextButton(onClick={selected=g}){Text(if(selected==g)"Seleccionado" else "Ver juego")}}}}
+ Divider(color=Edge);Text("Torneos de "+selected,fontWeight=FontWeight.Bold,fontSize=20.sp)
+ if(gameTournaments.isEmpty())Text("No hay torneos de este juego en la respuesta del servidor.",color=Muted)
+ gameTournaments.forEach{t->AaxPanel{Text(t.optString("name",t.optString("title","Torneo")),fontWeight=FontWeight.Bold);Text(t.optString("status")+" · "+t.optString("date"),color=Muted)}}
+ }
+}
 @Composable private fun RankingsScreen(tournaments:List<JSONObject>){
  val scope=rememberCoroutineScope();var game by remember{mutableStateOf(tournaments.firstOrNull()?.optString("game")?: "Beyblade X")};var rows by remember{mutableStateOf(listOf<JSONObject>())};var podiums by remember{mutableStateOf(listOf<JSONObject>())};var loading by remember{mutableStateOf(false)};var showPodiums by remember{mutableStateOf(false)}
  fun load(){scope.launch{loading=true;try{rows=arr(AaxApiClient.standings(game).body,"items");podiums=arr(AaxApiClient.podiums().body,"items")}catch(_:Exception){}finally{loading=false}}}
