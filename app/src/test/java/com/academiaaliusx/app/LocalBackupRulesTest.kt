@@ -44,6 +44,8 @@ class LocalBackupRulesTest {
         expectInvalid("""{"schemaVersion":1,"playerName":"A","games":[],"registrations":["bad\tID"],"createdTournaments":[]}""")
         expectInvalid("""{"schemaVersion":1,"playerName":"A","games":[],"registrations":["   "],"createdTournaments":[]}""")
         expectInvalid("""{"schemaVersion":1,"playerName":"A","games":[],"registrations":["xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"],"createdTournaments":[]}""")
+        expectInvalid("""{"schemaVersion":1,"playerName":"A","games":[],"registrations":[" padded "],"createdTournaments":[]}""")
+        expectInvalid("""{"schemaVersion":1,"playerName":"A","games":[],"registrations":[],"createdTournaments":[{"id":" padded ","title":"Liga"}]}""")
     }
 
     @Test fun exportLimitsAndSanitizesRecordsSoBackupRemainsRestorable() {
