@@ -1,24 +1,23 @@
 # Academia Alius X — Android nativo
 
-Kotlin + Jetpack Compose. No WebView and no redirect to the website.
+Aplicación Android nativa Kotlin + Jetpack Compose. No es una WebView.
 
-## Current native MVP
+## Funcionalidad nativa disponible en esta iteración
 
-- Bottom navigation: Home, Community, Tournaments, Profile.
-- Profile name and selected games persist on-device.
-- Local tournament creation, sign-up/cancel and deletion; registrations and events persist on-device.\n- Tournament search and filters for all events, registered events and locally created events.
-- Tournament title editing preserves spaces while typing and validates before saving.
-- Unit tests cover profile rules and tournament title, add/remove and persistence rules.
-- Feature data is explicitly demo/local until verified API contracts are available.
+- Navegación Compose de cuatro secciones: Inicio, Torneos, Comunidad y Perfil.
+- Perfil local: edición de nombre visible y selección de juegos favoritos; persistencia en SharedPreferences.
+- Torneos locales/de muestra: búsqueda, filtros, detalles, inscripción/retirada local, creación, edición, eliminación y compartir.
+- Copia de datos JSON: exportación e importación validada de perfil, juegos, inscripciones y torneos creados.
+- Mensajes explícitos para diferenciar datos locales/de muestra de la información online. Las inscripciones locales no se publican ni se envían al servidor.
+- Acceso al sitio oficial desde los espacios cuya integración nativa aún no está verificada.
 
-## Development status
+## Integración online y seguridad
 
-See [the native parity checklist](docs/native-parity-checklist.md) for the current feature-by-feature status and blockers.
+Los contratos de API, autenticación, autorización y escritura siguen sin estar verificados contra los handlers desplegados. No se simulan datos de comunidad ni se ejecutan mutaciones online desde estas pantallas. Consulta [docs/backend-read-only-audit.md](docs/backend-read-only-audit.md) y el [checklist de paridad](docs/native-parity-checklist.md).
 
-## Backend integration safety
+La persistencia local de esta iteración utiliza preferencias de Android. El contenido local no equivale a sincronización, ni a una cuenta online. Importar una copia sustituye los datos locales actuales.
 
-A read-only audit of Cloudflare Pages/D1 schema metadata has been documented in [docs/backend-read-only-audit.md](docs/backend-read-only-audit.md). The audit did not read user records or modify production. API routes/auth contracts and a reconciled staging environment remain blockers for live integration.
+## Build y CI
 
-The native app is developed in small commits with GitHub Actions APK builds and APK signature/archive verification.
+GitHub Actions ejecuta tests JVM, build debug, verificación de firma y archivo APK. La verificación de CI no sustituye pruebas en dispositivo/emulador ni la verificación de contratos backend.
 
-**Live API calls are experimental.** The native client contains route calls that have not been verified against the deployed Pages Function handlers. Do not use account deletion, password changes, tournament/social mutations, or other write actions against production until the request/response and authorization contracts have been audited. CI unit tests do not establish backend compatibility.
