@@ -12,7 +12,7 @@ import org.json.JSONObject
 object AaxApiClient {
     private const val BASE = "https://academiaaliusx.com"
     private val cookies = CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER)
-    data class ApiResult(val ok:Boolean,val status:Int,val body:JSONObject)
+    data class ApiResult(val ok:Boolean,val status:Int,val body:JSONObject) {\n        fun errorMessage(): String = ApiResponseRules.message(body, status)\n    }
 
     suspend fun me():ApiResult=request("GET","/api/me",null)
     suspend fun login(identifier:String,password:String):ApiResult=request("POST","/api/login",JSONObject().put("id",identifier).put("password",password))
