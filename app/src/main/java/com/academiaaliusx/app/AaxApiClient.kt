@@ -1,5 +1,7 @@
 package com.academiaaliusx.app
 
+import android.content.Context
+import java.net.URI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.CookieManager
@@ -12,6 +14,23 @@ import org.json.JSONObject
 object AaxApiClient {
     private const val BASE = "https://academiaaliusx.com"
     private val cookies = CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER)
+    private val baseUri = URI.create(BASE)
+    @Volatile private var vault: SessionCookieVault? = null
+    @Volatile private var initialized = false
+
+    @Synchronized fun initialize(context: Context) {
+        if (initialized) return
+        val secureVault = SessionCookieVault(context.applicationContext)
+        secureVault.restore().forEach { cookies.cookieStore.add(baseUri, it) }
+        vault = secureVault
+        initialized = true
+    }
+
+    @Synchronized fun clearSession() {
+        cookies.cookieStore.removeAll()
+        vault?.clear()
+    }
+
     data class ApiResult(val ok:Boolean,val status:Int,val body:JSONObject) {
         fun errorMessage(): String = ApiResponseRules.message(body, status)
     }
@@ -61,6 +80,7 @@ object AaxApiClient {
     suspend fun verifyEmail(token:String):ApiResult=request("POST","/api/verify-email",JSONObject().put("token",token))
     suspend fun deleteAccount(password:String):ApiResult=request("POST","/api/delete-account",JSONObject().put("password",password))
     private suspend fun request(method:String,path:String,payload:JSONObject?):ApiResult=withContext(Dispatchers.IO){
+        check(initialized) { "AaxApiClient.initialize(context) must be called before requests." }
         val url=URL(BASE+path)
         val connection=(url.openConnection() as HttpURLConnection).apply{
             requestMethod=method;connectTimeout=15000;readTimeout=15000;instanceFollowRedirects=false
@@ -72,6 +92,8 @@ object AaxApiClient {
             if(method=="POST")connection.outputStream.use{it.write((payload?:JSONObject()).toString().toByteArray(Charsets.UTF_8))}
             val status=connection.responseCode
             cookies.put(url.toURI(),connection.headerFields)
+            vault?.save(cookies.cookieStore.cookies, baseUri.host)
+            if(status==401) clearSession()
             val stream=if(status>=400)connection.errorStream else connection.inputStream
             val raw=stream?.bufferedReader(Charsets.UTF_8)?.use{it.readText()}?:"{}"
             ApiResult(status in 200..299,status,try{JSONObject(raw)}catch(_:Exception){JSONObject().put("raw",raw)})

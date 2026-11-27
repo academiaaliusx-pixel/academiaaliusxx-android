@@ -7,7 +7,7 @@ Last reviewed: 27 November 2026, branch `integration/aax-web-api`.
 ## Account and identity
 - [~] Login, registration and password-recovery screens/calls exist; deployed endpoint and auth contracts are unverified.
 - [~] Email verification, resend and token-reset methods exist in the API client; dedicated UI/deep-link handling is not complete.
-- [~] Session cookie handling is present in memory; persistence, expiry and lifecycle behavior are not tested.
+- [~] Session cookie lifecycle now includes encrypted Android Keystore persistence, startup restore and local clearing on HTTP 401/sign-out; server-side expiry semantics and device behavior remain unverified.
 
 ## Profile and game catalog
 - [~] Profile read, statistics and avatar-frame selection are present; endpoint contracts are unverified.

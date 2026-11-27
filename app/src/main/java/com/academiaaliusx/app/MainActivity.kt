@@ -24,7 +24,7 @@ import org.json.JSONObject
 import org.json.JSONArray
 
 private val Ink=Color(0xFF07151D); private val Panel=Color(0xFF102630); private val Cyan=Color(0xFF20C5C8); private val Muted=Color(0xFF91AAB2); private val Edge=Color(0xFF28505C); private val TextMain=Color(0xFFEAF3F5)
-class MainActivity:ComponentActivity(){override fun onCreate(savedInstanceState:Bundle?){super.onCreate(savedInstanceState);setContent{AAXNativeApp()}}}
+class MainActivity:ComponentActivity(){override fun onCreate(savedInstanceState:Bundle?){super.onCreate(savedInstanceState);AaxApiClient.initialize(applicationContext);setContent{AAXNativeApp()}}}
 
 @Composable private fun AAXNativeApp(){
  val scope=rememberCoroutineScope()
@@ -38,10 +38,23 @@ class MainActivity:ComponentActivity(){override fun onCreate(savedInstanceState:
  var profile by remember { mutableStateOf<JSONObject?>(null) }
  fun reload(){
    scope.launch { busy=true; try {
-     val me=AaxApiClient.me(); user=me.body.optJSONObject("user")
-     if(user!=null){authMode=false;val t=AaxApiClient.tournaments();val arr=t.body.optJSONArray("items")?:JSONArray(); tournaments=(0 until arr.length()).mapNotNull{arr.optJSONObject(it)}; profile=null}
-     else {authMode=true}
+     val me=AaxApiClient.me()
+     user=if(me.ok) me.body.optJSONObject("user") else null
+     if(user!=null){authMode=false;val t=AaxApiClient.tournaments();if(t.ok){val arr=t.body.optJSONArray("items")?:JSONArray();tournaments=(0 until arr.length()).mapNotNull{arr.optJSONObject(it)}}else notice=t.errorMessage();profile=null}
+     else {authMode=true;if(me.status!=401&&notice.isBlank())notice=me.errorMessage()}
    }catch(e:Exception){notice="Error de conexión: "+(e.message?: "desconocido")}finally{busy=false} }
+ }
+ fun logoutAction(){
+   scope.launch {
+     busy=true
+     var serverConfirmed=false
+     try { serverConfirmed=AaxApiClient.logout().ok } catch (_:Exception) { serverConfirmed=false }
+     finally {
+       AaxApiClient.clearSession()
+       user=null;profile=null;page=0;authMode=true;busy=false
+       notice=if(serverConfirmed)"Sesión cerrada." else "Sesión cerrada localmente. El servidor no confirmó la salida."
+     }
+   }
  }
  LaunchedEffect(Unit){reload()}
  var moreNav by remember { mutableStateOf(false) }
@@ -78,16 +91,16 @@ class MainActivity:ComponentActivity(){override fun onCreate(savedInstanceState:
     Header()
     Spacer(Modifier.height(20.dp))
     if (user == null) AuthScreen(registerMode, recoveryMode, nick, email, password, { nick = it }, { email = it }, { password = it }, { registerMode = it }, { recoveryMode = it }, busy, notice, { notice = "" }, {
-     scope.launch { busy = true; notice = ""; try { val r = if (recoveryMode) AaxApiClient.forgotPassword(email) else if (registerMode) AaxApiClient.register(nick, email, password) else AaxApiClient.login(nick, password); if (r.ok) { notice = if (recoveryMode) "Si la cuenta existe, recibirás instrucciones por correo." else if (registerMode && r.body.optBoolean("verification_required")) "Cuenta creada. Comprueba el correo para verificarla." else "Acceso correcto."; if (!recoveryMode) reload() } else notice = r.errorMessage() } catch (e: Exception) { notice = e.message ?: "Error de conexión" } finally { busy = false } }
+     scope.launch { busy = true; notice = ""; try { val r = if (recoveryMode) AaxApiClient.forgotPassword(email) else if (registerMode) AaxApiClient.register(nick, email, password) else AaxApiClient.login(nick, password); if (r.ok) { notice = if (recoveryMode) "Si la cuenta existe, recibirás instrucciones por correo." else if (registerMode && r.body.optBoolean("verification_required")) "Cuenta creada. Comprueba el correo para verificarla." else "Acceso correcto."; if (!recoveryMode && !(registerMode && r.body.optBoolean("verification_required"))) reload() } else notice = r.errorMessage() } catch (e: Exception) { notice = e.message ?: "Error de conexión" } finally { busy = false } }
     })
     else when (page) {
      0 -> HomeScreen(user!!, tournaments.size, tournaments, { page = 2 }, { page = 4 })
      1 -> GamesScreen(tournaments)
      2 -> TournamentScreen(tournaments, user!!, busy, notice, { notice = it }, { id, joined -> scope.launch { busy = true; try { val r = if (joined) AaxApiClient.leaveTournament(id) else AaxApiClient.joinTournament(id); if (r.ok) { notice = if (joined) "Inscripción cancelada." else "Inscripción confirmada."; reload() } else notice = r.errorMessage() } catch (e: Exception) { notice = e.message ?: "Error" } finally { busy = false } } })
      3 -> RankingsScreen(tournaments)
-     4 -> ProfileScreen(user!!, profile, busy, notice, { scope.launch { busy = true; try { profile = AaxApiClient.profile(user?.optString("nick") ?: "").body } catch (e: Exception) { notice = e.message ?: "Error" } finally { busy = false } } }, { scope.launch { busy = true; try { val r = AaxApiClient.logout(); if (r.ok) { user = null; profile = null; authMode = true; page = 0; notice = "Sesión cerrada." } else notice = "No se pudo cerrar sesión" } finally { busy = false } } })
+     4 -> ProfileScreen(user!!, profile, busy, notice, { scope.launch { busy = true; try { val r=AaxApiClient.profile(user?.optString("nick") ?: "");profile=if(r.ok)r.body else null;if(!r.ok)notice=r.errorMessage() } catch (e: Exception) { notice = e.message ?: "Error" } finally { busy = false } } }, logoutAction)
      5 -> CommunityScreen()
-     6 -> SettingsScreen(user!!, { scope.launch { busy = true; try { val r = AaxApiClient.logout(); if (r.ok) { user = null; profile = null; page = 0; notice = "Sesión cerrada." } } finally { busy = false } } })
+     6 -> SettingsScreen(user!!, logoutAction)
      else -> OrganizationScreen(user!!)
     }
     if (busy) LinearProgressIndicator(Modifier.fillMaxWidth(), color = Cyan)
