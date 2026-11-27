@@ -9,9 +9,18 @@ import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 
 /** Android wrapper for the official responsive Academia Alius X website. */
@@ -22,40 +31,66 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             var canGoBack by remember { mutableStateOf(false) }
-            AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory = { context ->
-                    WebView(context).apply {
-                        webView = this
-                        settings.apply {
-                            javaScriptEnabled = true
-                            domStorageEnabled = true
-                            loadsImagesAutomatically = true
-                            useWideViewPort = true
-                            loadWithOverviewMode = false
-                            setSupportZoom(false)
-                            builtInZoomControls = false
-                            displayZoomControls = false
-                            javaScriptCanOpenWindowsAutomatically = false
-                            mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
-                            allowFileAccess = false
-                            allowContentAccess = true
-                        }
-                        webChromeClient = WebChromeClient()
-                        webViewClient = object : WebViewClient() {
-                            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                                // Keep HTTPS website navigation in the app; reject non-secure schemes.
-                                return request.url.scheme != "https"
+            var pageError by remember { mutableStateOf(false) }
+            Box(Modifier.fillMaxSize()) {
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { context ->
+                        WebView(context).apply {
+                            webView = this
+                            settings.apply {
+                                javaScriptEnabled = true
+                                domStorageEnabled = true
+                                loadsImagesAutomatically = true
+                                useWideViewPort = true
+                                loadWithOverviewMode = false
+                                setSupportZoom(false)
+                                builtInZoomControls = false
+                                displayZoomControls = false
+                                javaScriptCanOpenWindowsAutomatically = false
+                                mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+                                allowFileAccess = false
+                                allowContentAccess = true
                             }
-                            override fun onPageFinished(view: WebView, url: String?) {
-                                canGoBack = view.canGoBack()
+                            webChromeClient = WebChromeClient()
+                            webViewClient = object : WebViewClient() {
+                                override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                                    // HTTPS navigation remains in the app; reject other schemes.
+                                    return request.url.scheme != "https"
+                                }
+                                override fun onPageStarted(view: WebView, url: String?, favicon: android.graphics.Bitmap?) {
+                                    pageError = false
+                                }
+                                override fun onPageFinished(view: WebView, url: String?) {
+                                    canGoBack = view.canGoBack()
+                                }
+                                override fun onReceivedError(
+                                    view: WebView,
+                                    request: WebResourceRequest,
+                                    error: android.webkit.WebResourceError
+                                ) {
+                                    if (request.isForMainFrame) pageError = true
+                                }
                             }
+                            loadUrl("https://academiaaliusx.com")
                         }
-                        loadUrl("https://academiaaliusx.com")
+                    },
+                    update = { canGoBack = it.canGoBack() }
+                )
+                if (pageError) {
+                    Column(
+                        modifier = Modifier.align(Alignment.Center).padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text("No se ha podido cargar Academia Alius X.", style = MaterialTheme.typography.titleMedium)
+                        Text("Comprueba tu conexión e inténtalo de nuevo.")
+                        Button(onClick = { pageError = false; webView?.reload() }) {
+                            Text("Reintentar")
+                        }
                     }
-                },
-                update = { canGoBack = it.canGoBack() }
-            )
+                }
+            }
             BackHandler(enabled = canGoBack) {
                 webView?.goBack()
                 canGoBack = webView?.canGoBack() ?: false
