@@ -127,6 +127,7 @@ class MainActivity:ComponentActivity(){override fun onCreate(savedInstanceState:
 @Composable private fun TournamentScreen(items:List<JSONObject>,user:JSONObject,busy:Boolean,notice:String,onNotice:(String)->Unit,onAction:(String,Boolean)->Unit){
  var query by remember { mutableStateOf("") }
  var filter by remember { mutableStateOf(TournamentListFilter.ALL) }
+ var selected by remember { mutableStateOf<JSONObject?>(null) }
  val visible=TournamentListRules.filter(items,query,filter)
  Column(Modifier.fillMaxSize()){
   Text("TORNEOS ONLINE",fontSize=28.sp,fontWeight=FontWeight.Black,letterSpacing=1.5.sp)
@@ -152,11 +153,27 @@ class MainActivity:ComponentActivity(){override fun onCreate(savedInstanceState:
       Text(listOf(t.optString("game"),t.optString("date"),status).filter{it.isNotBlank()}.joinToString(" · "),color=Muted,fontSize=12.sp)
       Spacer(Modifier.height(6.dp))
       Text("Participantes: "+t.optString("n","?")+(if(t.has("max_players"))"/"+t.optString("max_players")else""),color=Muted)
+      TextButton(onClick={selected=t},modifier=Modifier.fillMaxWidth()){Text("Ver detalles")}
       Button(onClick={onAction(id,joined)},enabled=!busy&&status=="open",modifier=Modifier.fillMaxWidth()){Text(if(joined)"Cancelar inscripción" else "Inscribirme")}
      }
     }
    }
   }
+ }
+ selected?.let { t ->
+  AlertDialog(
+   onDismissRequest={selected=null},
+   containerColor=Panel,
+   title={Text(TournamentListRules.title(t),fontWeight=FontWeight.Bold)},
+   text={
+    Column(Modifier.heightIn(max=420.dp).verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(8.dp)){
+     val fields=listOf("game" to "Juego","status" to "Estado","date" to "Fecha","n" to "Participantes","max_players" to "Máximo de jugadores","description" to "Descripción","location" to "Ubicación","format" to "Formato","url" to "Enlace")
+     fields.forEach{(key,label)->val value=t.optString(key).trim();if(value.isNotEmpty()&&value!="null"){Text(label,fontWeight=FontWeight.SemiBold,color=Cyan);Text(value)}}
+     Text("Estos detalles proceden únicamente de los datos recibidos en el listado.",color=Muted,fontSize=12.sp)
+    }
+   },
+   confirmButton={TextButton(onClick={selected=null}){Text("Cerrar")}}
+  )
  }
 }
 @Composable private fun ProfileScreen(user:JSONObject,profile:JSONObject?,busy:Boolean,notice:String,refresh:()->Unit,logout:()->Unit){
