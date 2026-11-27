@@ -13,8 +13,8 @@ android {
         applicationId = "com.academiaaliusx.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 20
-        versionName = "1.0.0"
+        versionCode = 21
+        versionName = "1.0.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
@@ -42,7 +42,6 @@ dependencies {
     implementation("com.google.code.gson:gson:2.11.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0" )
     testImplementation("junit:junit:4.13.2")
-    // Use a real JSON implementation in JVM unit tests instead of Android's stubbed org.json.
     testImplementation("org.json:json:20240303")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.7.6")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
