@@ -1,51 +1,52 @@
 # Native Android parity checklist
 
-Legend: **[x]** verified complete, **[~]** partially implemented / not yet verified end-to-end, **[ ]** missing.
+Legend: **[x]** complete and verified; **[~]** implemented in part/local only/not verified online; **[ ]** missing.
 
 Last reviewed: 27 November 2026, branch `integration/aax-web-api`.
 
-## Web parity strategy\n- [~] Android entry screen now loads `https://academiaaliusx.com` in a WebView to reuse the official responsive layout, content, and navigation; browser-back handling is wired. CI build and device-level compatibility checks remain pending.
-- [~] WebView main-frame network errors now display an in-app retry state; login/session behavior, downloads/uploads, links, keyboard/forms, and rendering still require device validation.
-
+## Native app shell
+- [~] Compose navigation: Inicio, Torneos, Comunidad, Perfil; current UI cycle is native rather than WebView. Screen-level tests and device validation pending.
+- [~] Offline-first local screen data and explicit local/demo labels; online parity remains unverified.
 
 ## Account and identity
-- [~] Login, registration and password-recovery screens/calls exist; deployed endpoint and auth contracts are unverified.
-- [~] Email verification, resend and token-reset methods exist in the API client; dedicated UI/deep-link handling is not complete.
-- [~] Session cookie lifecycle now includes encrypted Android Keystore persistence, startup restore and local clearing on HTTP 401/sign-out; server-side expiry semantics and device behavior remain unverified.
+- [~] Local profile display name and favorite games edit/persistence. Not a server profile.
+- [ ] Online login, registration, email verification and recovery UI/flow verified end-to-end.
+- [~] Session-cookie vault/API client exists in source, but route contracts and device behavior remain unverified; no live mutation testing.
 
-## Profile and game catalog
-- [~] Profile read, statistics and avatar-frame selection are present; endpoint contracts are unverified.
-- [ ] Profile editing, avatar upload/removal UI and comprehensive account preferences are not complete.
-- [~] Static game catalog and tournament grouping/filtering are present; catalog source and synchronization are not authoritative.
+## Profile and games
+- [~] Editable local name, bounded input and supported-game selection.
+- [ ] Online profile/statistics, profile editing, avatar upload/removal/frame and authoritative game catalogue.
 
 ## Competition
-- [~] Tournament list and registration/cancellation UI/API calls exist; eligibility for open events is now case-insensitive/trimmed in local UI logic and tested; route contracts are unverified. Native list filtering by title/game/status and open/registered state is implemented locally and covered by JVM tests. A local detail dialog now displays fields present in list responses; a dedicated server detail/results route remains unverified/missing.
-- [~] Search, local filters and local detail presentation are implemented; server detail, result reporting, creation/management and consistent error/loading/empty states still need work.
-- [~] Ranking and recent-podium views call API methods; contracts and presentation completeness remain unverified.
+- [~] Native list with local/demo events, search, ALL/AVAILABLE/REGISTERED/CREATED filters.
+- [~] Local detail dialog, registration/withdrawal, share, create/edit/delete and persisted state; these are device-local and do not publish events or register online.
+- [~] JSON backup/import validates local profile, favorite games, local registration IDs and created events.
+- [ ] Server tournament list/detail, real join/leave, results, tournament administration, eligibility and verified loading/error/retry states against staging contracts.
+- [~] Tournament filter and persistence/title rules have JVM coverage; Compose screen/device tests pending.
+- [ ] Verified ranking/standings/podium integration.
 
 ## Community
-- [~] Player search, friend request/accept/reject/remove, blocking, teams and team-request actions have UI/API calls; contracts remain unverified.
-- [ ] Direct messaging UI, message state and notifications are missing.
+- [ ] Verified native player search, friends/request actions, block/unblock, teams/requests and direct messages.
+- [~] Community screen explains current contract blocker and links to official site without presenting mock player data.
 
 ## Organization
-- [~] Challonge connection-test UI exists; other roster, match, state, link and synchronization methods are API-client-only and not end-to-end verified.
-- [ ] Admin authorization UX, safe preview/review, and full management workflows need verification and completion.
+- [ ] Verified admin authorization and safe management flows; Challonge operations remain unverified and must not run against production.
 
-## Settings, offline, accessibility
-- [~] Change-password, block-list/unblock, account-deletion and logout UI/API calls exist; live contracts are unverified. Destructive production actions are not to be tested.
-- [~] Local profile/tournament/backup rule modules and tests exist; end-to-end offline behavior and integration with the screens need audit.
-- [ ] Deep links and push/local notification flows.
-- [~] Basic text labels and Compose controls are present; accessibility audit and UI tests are not complete.
+## Settings, security, offline, accessibility
+- [~] Local JSON export/import, bounded validation and user-visible import errors.
+- [~] Local-only states labelled; no privileged secret shipped or production write performed in this cycle.
+- [ ] Deep links, notifications, online settings/change-password/account deletion and device validation.
+- [~] Compose controls have visible labels/content descriptions for primary navigation and share actions; accessibility audit and UI tests pending.
+- [ ] Full offline/restore behavior, device/emulator tests, release build and broader security review.
 
-## Release and integration blockers
-- [~] CI builds and APK verification workflow exists. A previous run failed because JVM tests were invoking Android's stub `org.json`; this run adds a real JSON test dependency and expands tests. The final commit's CI result is pending.
-- [ ] Obtain deployed Pages Function source or a verified endpoint/auth contract.
-- [ ] Reconcile staging D1 schema with production before any write integration testing.
-- [ ] Verify API calls against staging, then conduct a production-read-only smoke check only after contract verification and authorization.
-- [ ] Complete screen-level UI tests, release build, APK verification, and device testing.
+## Backend/CI blockers
+- [ ] Obtain Pages Function handlers or verified API contract inventory; currently unavailable via read-only audit.
+- [ ] Reconcile staging D1 schema with production before integration testing.
+- [~] CI build workflow exists; this native-screen commit's run must be checked and any failures corrected.
+- [ ] UI tests, install/run testing on device or emulator, signed release artifact, and end-to-end verification.
 
-## Immediate next cycle
-1. Verify CI for local tournament detail dialog.
-2. Continue tournament result/management gaps only when endpoint contracts are evidenced.
-3. Audit session restore/401 and navigation UI states with tests; device-level Keystore behavior remains unverified.
-4. Continue contract discovery without production writes; do not label speculative calls as verified.
+## Next cycle
+1. Verify CI for this native Compose shell and fix compilation/test failures first.
+2. Add Compose UI tests for tab navigation, tournament local lifecycle, and profile editing; use a controlled test environment.
+3. Audit Android permission/navigation/offline and backup restore; keep the backup import confirmation semantics safe.
+4. Obtain read-only Pages Functions contract evidence; implement real online tournament read only once verified.
