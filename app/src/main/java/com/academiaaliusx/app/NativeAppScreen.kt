@@ -1,6 +1,7 @@
 package com.academiaaliusx.app
 
 import android.content.Context
+import androidx.activity.compose.BackHandler
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.*
@@ -50,6 +51,8 @@ fun NativeAppScreen() {
     var backupText by remember { mutableStateOf("") }
     var backupMessage by remember { mutableStateOf("") }
 
+    BackHandler(enabled = selectedEvent != null) { selectedEvent = null }
+
     val events = remember(created) { sampleEvents + created }
     val createdIds = remember(created) { created.map { it.id }.toSet() }
     val visible = remember(events, registrations, createdIds, query, mode) {
@@ -93,7 +96,9 @@ fun NativeAppScreen() {
         Box(Modifier.fillMaxSize().padding(padding)) {
             when(tab) {
                 AaxTab.HOME -> HomeTab(playerName, games, events.size, registrations.size, onTournaments = { tab = AaxTab.TOURNAMENTS }, onProfile = { tab = AaxTab.PROFILE }, openSite = { openSite() })
-                AaxTab.TOURNAMENTS -> TournamentTab(visible, registrations, createdIds, query, mode, { query = it }, { mode = it }, { createDialog = true }, { selectedEvent = it }, { toggleRegistration(it) }, { shareEvent(it) }, { editEvent = it }, { id -> pendingDeletion = created.firstOrNull { event -> event.id == id } })
+                 AaxTab.TOURNAMENTS -> selectedEvent?.let { event ->
+                    LocalTournamentDetailScreen(event, event.id in registrations, event.id in createdIds, { selectedEvent = null }, { toggleRegistration(event.id) }, { shareEvent(event) }, { editEvent = event; selectedEvent = null }, { pendingDeletion = event })
+                } ?: TournamentTab(visible, registrations, createdIds, query, mode, { query = it }, { mode = it }, { createDialog = true }, { selectedEvent = it }, { toggleRegistration(it) }, { shareEvent(it) }, { editEvent = it }, { id -> pendingDeletion = created.firstOrNull { event -> event.id == id } })
                 AaxTab.COMMUNITY -> CommunityTab(openSite = { openSite("/comunidad") })
                 AaxTab.PROFILE -> ProfileTab(playerName, games, { profileDialog = true }, { backupDialog = true })
             }
@@ -102,23 +107,6 @@ fun NativeAppScreen() {
 
     if (createDialog) TitleDialog("Crear torneo local", "", "Crear", { createDialog = false }) { title -> addEvent(title); createDialog = false }
     editEvent?.let { event -> TitleDialog("Editar torneo", event.title, "Guardar", { editEvent = null }) { title -> changeEvent(event.id, title); editEvent = null } }
-    selectedEvent?.let { event ->
-        AlertDialog(onDismissRequest = { selectedEvent = null }, title = { Text(event.title) }, text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(if(event.id in createdIds) "Creado en este dispositivo" else "Evento de muestra")
-                Text(if(event.id in registrations) "Inscripción guardada localmente." else "Sin inscripción local.")
-                Text("Esta inscripción no se envía al servidor ni publica el torneo.", style = MaterialTheme.typography.bodySmall)
-            }
-        }, confirmButton = {
-            TextButton(onClick = { toggleRegistration(event.id); selectedEvent = null }) { Text(if(event.id in registrations) "Retirarme (local)" else "Inscribirme (local)") }
-        }, dismissButton = {
-            Row {
-                TextButton(onClick = { shareEvent(event) }) { Text("Compartir") }
-                if(event.id in createdIds) TextButton(onClick = { editEvent = event; selectedEvent = null }) { Text("Editar") }
-                TextButton(onClick = { selectedEvent = null }) { Text("Cerrar") }
-            }
-        })
-    }
     if(profileDialog) {
         var draft by remember(playerName) { mutableStateOf(playerName) }
         AlertDialog(onDismissRequest = { profileDialog = false }, title = { Text("Editar perfil local") }, text = {
@@ -152,7 +140,7 @@ fun NativeAppScreen() {
     pendingDeletion?.let { event ->
         AlertDialog(onDismissRequest = { pendingDeletion = null }, title = { Text("Eliminar torneo local") }, text = {
             Text("¿Quieres eliminar \"${event.title}\" de este dispositivo? Esta acción no se puede deshacer.")
-        }, confirmButton = { TextButton(onClick = { deleteEvent(event.id); pendingDeletion = null }) { Text("Eliminar") } }, dismissButton = { TextButton(onClick = { pendingDeletion = null }) { Text("Cancelar") } })
+        }, confirmButton = { TextButton(onClick = { deleteEvent(event.id); selectedEvent = null; pendingDeletion = null }) { Text("Eliminar") } }, dismissButton = { TextButton(onClick = { pendingDeletion = null }) { Text("Cancelar") } })
     }
 
     pendingBackupRestore?.let { data ->
@@ -213,6 +201,64 @@ private fun TournamentTab(visible: List<LocalTournament>, registrations: Set<Str
                 }
             }
         }
+    }
+}
+
+
+
+@Composable
+private fun LocalTournamentDetailScreen(
+    event: LocalTournament,
+    registered: Boolean,
+    created: Boolean,
+    onBack: () -> Unit,
+    onToggleRegistration: () -> Unit,
+    onShare: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    Column(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Volver a torneos") }
+            Text("Detalle de torneo", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        }
+        ElevatedCard(Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(event.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                Text(LocalTournamentRules.detailSourceLabel(created), style = MaterialTheme.typography.labelLarge)
+                Divider()
+                Text(LocalTournamentRules.detailRegistrationState(registered), style = MaterialTheme.typography.titleMedium)
+                Text(
+                    "Esta ficha contiene únicamente información local o de demostración. No hay fechas, plazas, reglas, resultados ni organizador confirmados por el servidor.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text("ID local: \${event.id}", style = MaterialTheme.typography.bodySmall)
+            }
+        }
+        Button(onClick = onToggleRegistration, modifier = Modifier.fillMaxWidth()) {
+            Text(LocalTournamentRules.detailRegistrationLabel(registered))
+        }
+        OutlinedButton(onClick = onShare, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.Share, contentDescription = null)
+            Spacer(Modifier.width(8.dp))
+            Text("Compartir ficha")
+        }
+        if (created) {
+            OutlinedButton(onClick = onEdit, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Filled.Edit, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("Editar torneo local")
+            }
+            TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Filled.Delete, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("Eliminar torneo local")
+            }
+        }
+        StatusNote("Las inscripciones, modificaciones y eliminaciones de esta ficha solo afectan a este dispositivo.")
     }
 }
 

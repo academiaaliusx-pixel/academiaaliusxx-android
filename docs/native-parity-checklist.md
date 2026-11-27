@@ -19,7 +19,7 @@ Last reviewed: 27 November 2026, branch `integration/aax-web-api`.
 
 ## Competition
 - [~] Native list with local/demo events, search, ALL/AVAILABLE/REGISTERED/CREATED filters.
-- [~] Local detail dialog, registration/withdrawal, share, create/edit/delete and persisted state; these are device-local and do not publish events or register online.
+- [~] Dedicated native detail screen with back navigation, local registration/withdrawal, sharing and local edit/delete actions (confirmed); created/sample data and actions remain device-local and do not publish or register online.
 - [~] JSON backup/import validates local profile, favorite games, local registration IDs and created events; restoration now previews counts and requires explicit confirmation before replacing local data. The preview helper is unit-tested.
 - [~] Deleting a locally created tournament now requires an explicit confirmation dialog.
 - [ ] Server tournament list/detail, real join/leave, results, tournament administration, eligibility and verified loading/error/retry states against staging contracts.
@@ -48,6 +48,6 @@ Last reviewed: 27 November 2026, branch `integration/aax-web-api`.
 
 ## Next cycle
 1. Verify CI for the native Compose shell, the system navigation inset fix, and the official launcher-logo asset.
-2. Add instrumented Compose UI tests for tab navigation, tournament lifecycle, profile editing, and the new confirmation dialogs; use a controlled test environment.
+2. Add instrumented Compose UI tests for tab navigation, tournament-detail navigation/back, tournament lifecycle, profile editing and confirmation dialogs; use a controlled test environment.
 3. Audit Android permission/navigation/offline behavior and backup restore edge cases.
 4. Obtain read-only Pages Functions contract evidence; implement real online tournament reads only once verified.

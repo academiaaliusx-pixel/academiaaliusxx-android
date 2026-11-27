@@ -76,6 +76,15 @@ class LocalTournamentRulesTest {
         assertEquals("3 torneos encontrados", LocalTournamentRules.resultSummary(3))
     }
 
+    @Test fun detailScreenLabelsSourceAndRegistrationActionsWithoutClaimingOnline() {
+        assertEquals("Torneo local creado en este dispositivo", LocalTournamentRules.detailSourceLabel(true))
+        assertEquals("Evento de demostración", LocalTournamentRules.detailSourceLabel(false))
+        assertEquals("Inscribirme localmente", LocalTournamentRules.detailRegistrationLabel(false))
+        assertEquals("Retirar inscripción local", LocalTournamentRules.detailRegistrationLabel(true))
+        assertEquals("Inscripción guardada en este dispositivo", LocalTournamentRules.detailRegistrationState(true))
+        assertEquals("Todavía no tienes una inscripción local", LocalTournamentRules.detailRegistrationState(false))
+    }
+
     @Test fun shareTextClearlyLabelsLocalAndDemoEvents() {
         assertEquals("Academia Alius X\n\nLiga\nTorneo local creado en este dispositivo\nInscripción guardada localmente.\n\nEste evento no está publicado ni tiene inscripción online.", LocalTournamentRules.shareText(" Liga ", true, true))
         assertEquals("Academia Alius X\n\nCopa\nEvento de demostración\nAún no tienes una inscripción local.\n\nEste evento no está publicado ni tiene inscripción online.", LocalTournamentRules.shareText("Copa", false, false))
