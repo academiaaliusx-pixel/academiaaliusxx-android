@@ -11,6 +11,10 @@ Kotlin + Jetpack Compose. No WebView and no redirect to the website.
 - Unit tests cover profile rules and tournament title, add/remove and persistence rules.
 - Feature data is explicitly demo/local until verified API contracts are available.
 
+## Development status
+
+See [the native parity checklist](docs/native-parity-checklist.md) for the current feature-by-feature status and blockers.
+
 ## Backend integration safety
 
 A read-only audit of Cloudflare Pages/D1 schema metadata has been documented in [docs/backend-read-only-audit.md](docs/backend-read-only-audit.md). The audit did not read user records or modify production. API routes/auth contracts and a reconciled staging environment remain blockers for live integration.
