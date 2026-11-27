@@ -2,6 +2,8 @@ package com.academiaaliusx.app
 
 import android.os.Bundle
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
@@ -12,11 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 
-/**
- * Web-parity shell: render the official responsive AAX site in Android WebView.
- * Screen layout, navigation and page behavior are delegated to the official site
- * so the APK stays visually aligned with its mobile-web experience.
- */
+/** Android wrapper for the official responsive Academia Alius X website. */
 class MainActivity : ComponentActivity() {
     private var webView: WebView? = null
 
@@ -29,22 +27,31 @@ class MainActivity : ComponentActivity() {
                 factory = { context ->
                     WebView(context).apply {
                         webView = this
-                        settings.javaScriptEnabled = true
-                        settings.domStorageEnabled = true
-                        settings.loadsImagesAutomatically = true
-                        settings.useWideViewPort = true
-                        settings.loadWithOverviewMode = false
-                        settings.setSupportZoom(false)
-                        settings.builtInZoomControls = false
-                        settings.displayZoomControls = false
-                        settings.javaScriptCanOpenWindowsAutomatically = false
+                        settings.apply {
+                            javaScriptEnabled = true
+                            domStorageEnabled = true
+                            loadsImagesAutomatically = true
+                            useWideViewPort = true
+                            loadWithOverviewMode = false
+                            setSupportZoom(false)
+                            builtInZoomControls = false
+                            displayZoomControls = false
+                            javaScriptCanOpenWindowsAutomatically = false
+                            mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+                            allowFileAccess = false
+                            allowContentAccess = true
+                        }
                         webChromeClient = WebChromeClient()
                         webViewClient = object : WebViewClient() {
+                            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                                // Keep HTTPS website navigation in the app; reject non-secure schemes.
+                                return request.url.scheme != "https"
+                            }
                             override fun onPageFinished(view: WebView, url: String?) {
                                 canGoBack = view.canGoBack()
                             }
                         }
-                        loadUrl("https://academiaaliusx.com")
+                        if (savedInstanceState == null) loadUrl("https://academiaaliusx.com")
                     }
                 },
                 update = { canGoBack = it.canGoBack() }
