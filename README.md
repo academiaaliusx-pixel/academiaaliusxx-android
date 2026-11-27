@@ -16,3 +16,5 @@ Kotlin + Jetpack Compose. No WebView and no redirect to the website.
 A read-only audit of Cloudflare Pages/D1 schema metadata has been documented in [docs/backend-read-only-audit.md](docs/backend-read-only-audit.md). The audit did not read user records or modify production. API routes/auth contracts and a reconciled staging environment remain blockers for live integration.
 
 The native app is developed in small commits with GitHub Actions APK builds and APK signature/archive verification.
+
+**Live API calls are experimental.** The native client contains route calls that have not been verified against the deployed Pages Function handlers. Do not use account deletion, password changes, tournament/social mutations, or other write actions against production until the request/response and authorization contracts have been audited. CI unit tests do not establish backend compatibility.
