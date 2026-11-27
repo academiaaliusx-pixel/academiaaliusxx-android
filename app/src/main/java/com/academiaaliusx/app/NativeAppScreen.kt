@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -78,7 +80,7 @@ fun NativeAppScreen() {
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
+            NavigationBar(windowInsets = WindowInsets.navigationBars) {
                 AaxTab.entries.forEach { item ->
                     val icon = when(item) { AaxTab.HOME -> Icons.Filled.Home; AaxTab.TOURNAMENTS -> Icons.Filled.EmojiEvents; AaxTab.COMMUNITY -> Icons.Filled.Groups; AaxTab.PROFILE -> Icons.Filled.Person }
                     NavigationBarItem(selected = tab == item, onClick = { tab = item }, icon = { Icon(icon, contentDescription = item.label) }, label = { Text(item.label) })
