@@ -98,9 +98,9 @@ class MainActivity:ComponentActivity(){override fun onCreate(savedInstanceState:
      1 -> GamesScreen(tournaments)
      2 -> TournamentScreen(tournaments, user!!, busy, notice, { notice = it }, { id, joined -> scope.launch { busy = true; try { val r = if (joined) AaxApiClient.leaveTournament(id) else AaxApiClient.joinTournament(id); if (r.ok) { notice = if (joined) "Inscripción cancelada." else "Inscripción confirmada."; reload() } else notice = r.errorMessage() } catch (e: Exception) { notice = e.message ?: "Error" } finally { busy = false } } })
      3 -> RankingsScreen(tournaments)
-     4 -> ProfileScreen(user!!, profile, busy, notice, { scope.launch { busy = true; try { val r=AaxApiClient.profile(user?.optString("nick") ?: "");profile=if(r.ok)r.body else null;if(!r.ok)notice=r.errorMessage() } catch (e: Exception) { notice = e.message ?: "Error" } finally { busy = false } } }, logoutAction)
+     4 -> ProfileScreen(user!!, profile, busy, notice, { scope.launch { busy = true; try { val r=AaxApiClient.profile(user?.optString("nick") ?: "");profile=if(r.ok)r.body else null;if(!r.ok)notice=r.errorMessage() } catch (e: Exception) { notice = e.message ?: "Error" } finally { busy = false } } }, ::logoutAction)
      5 -> CommunityScreen()
-     6 -> SettingsScreen(user!!, logoutAction)
+     6 -> SettingsScreen(user!!, ::logoutAction)
      else -> OrganizationScreen(user!!)
     }
     if (busy) LinearProgressIndicator(Modifier.fillMaxWidth(), color = Cyan)
