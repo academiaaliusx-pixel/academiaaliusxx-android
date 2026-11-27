@@ -14,6 +14,8 @@ object TournamentListRules {
 
     fun game(item: JSONObject): String = item.optString("game")
 
+    fun isOpen(item: JSONObject): Boolean = item.optString("status").trim().equals("open", ignoreCase = true)
+
     fun isJoined(item: JSONObject): Boolean {
         val value = item.opt("joined")
         return when (value) {
@@ -33,7 +35,7 @@ object TournamentListRules {
             val status = item.optString("status").trim().lowercase(Locale.ROOT)
             val matchesFilter = when (filter) {
                 TournamentListFilter.ALL -> true
-                TournamentListFilter.OPEN -> status == "open"
+                TournamentListFilter.OPEN -> isOpen(item)
                 TournamentListFilter.JOINED -> isJoined(item)
             }
             val matchesQuery = normalized.isBlank() ||
