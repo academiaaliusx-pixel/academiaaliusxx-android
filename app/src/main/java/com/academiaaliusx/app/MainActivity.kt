@@ -18,13 +18,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.ui.platform.testTag
 import androidx.core.view.WindowCompat
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Edge-to-edge is explicit. Compose reserves the system-bar insets,
-        // so the WebView never renders its fixed navigation underneath Android.
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.statusBarColor = Color.rgb(5, 22, 29)
         window.navigationBarColor = Color.rgb(5, 22, 29)
@@ -47,7 +46,9 @@ private fun OfficialWebExperience() {
     var canGoBack by remember { mutableStateOf(false) }
     BackHandler(enabled = canGoBack) { webView?.goBack() }
     AndroidView(
-        modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.systemBars),
+        modifier = Modifier.fillMaxSize()
+            .windowInsetsPadding(WindowInsets.systemBars)
+            .testTag("official-webview"),
         factory = { context ->
             WebView(context).apply {
                 settings.javaScriptEnabled = true
