@@ -139,7 +139,7 @@ class MainActivity:ComponentActivity(){override fun onCreate(savedInstanceState:
    FilterChip(selected=filter==TournamentListFilter.OPEN,onClick={filter=TournamentListFilter.OPEN},label={Text("Abiertos")})
    FilterChip(selected=filter==TournamentListFilter.JOINED,onClick={filter=TournamentListFilter.JOINED},label={Text("Inscritos")})
   }
-  Text("\${visible.size} de \${items.size} torneos",color=Muted,modifier=Modifier.padding(vertical=6.dp))
+  Text(visible.size.toString()+" de "+items.size+" torneos",color=Muted,modifier=Modifier.padding(vertical=6.dp))
   if(items.isEmpty()) Text("No hay torneos en la respuesta del servidor.",color=Muted)
   else if(visible.isEmpty()) Text("No hay torneos que coincidan. Prueba a borrar la búsqueda o cambiar el filtro.",color=Muted)
   LazyColumn(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(12.dp)){

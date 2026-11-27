@@ -19,7 +19,7 @@ object TournamentListRules {
         return when (value) {
             is Boolean -> value
             is Number -> value.toInt() > 0
-            else -> value?.toString()?.trim()?.lowercase(Locale.ROOT) in setOf("true", "1", "yes")
+            else -> (value?.toString()?.trim()?.lowercase(Locale.ROOT) ?: "") in setOf("true", "1", "yes")
         }
     }
 
