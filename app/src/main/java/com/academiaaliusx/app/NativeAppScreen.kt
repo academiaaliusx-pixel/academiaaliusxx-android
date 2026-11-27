@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import java.util.UUID
@@ -88,7 +89,7 @@ fun NativeAppScreen() {
             NavigationBar(windowInsets = WindowInsets.navigationBars) {
                 AaxTab.entries.forEach { item ->
                     val icon = when(item) { AaxTab.HOME -> Icons.Filled.Home; AaxTab.TOURNAMENTS -> Icons.Filled.EmojiEvents; AaxTab.COMMUNITY -> Icons.Filled.Groups; AaxTab.PROFILE -> Icons.Filled.Person }
-                    NavigationBarItem(selected = tab == item, onClick = { tab = item }, icon = { Icon(icon, contentDescription = item.label) }, label = { Text(item.label) })
+                    NavigationBarItem(selected = tab == item, onClick = { tab = item }, modifier = Modifier.testTag("nav-${item.name.lowercase()}"), icon = { Icon(icon, contentDescription = item.label) }, label = { Text(item.label) })
                 }
             }
         }
@@ -111,11 +112,11 @@ fun NativeAppScreen() {
         var draft by remember(playerName) { mutableStateOf(playerName) }
         AlertDialog(onDismissRequest = { profileDialog = false }, title = { Text("Editar perfil local") }, text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(draft, { draft = PlayerProfileRules.cleanNameInput(it) }, label = { Text("Nombre visible") }, singleLine = true, supportingText = { Text("Máximo ${PlayerProfileRules.MAX_NAME_LENGTH} caracteres") })
+                OutlinedTextField(draft, { draft = PlayerProfileRules.cleanNameInput(it) }, modifier = Modifier.testTag("profile-name-input"), label = { Text("Nombre visible") }, singleLine = true, supportingText = { Text("Máximo ${PlayerProfileRules.MAX_NAME_LENGTH} caracteres") })
                 Text("Juegos favoritos")
                 PlayerProfileRules.availableGames.forEach { game -> Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(checked = game in games, onCheckedChange = { toggleGame(game, it) }); Text(game) } }
             }
-        }, confirmButton = { TextButton(onClick = { updateName(draft); profileDialog = false }) { Text("Guardar") } }, dismissButton = { TextButton(onClick = { profileDialog = false }) { Text("Cancelar") } })
+        }, confirmButton = { TextButton(onClick = { updateName(draft); profileDialog = false }, modifier = Modifier.testTag("profile-save")) { Text("Guardar") } }, dismissButton = { TextButton(onClick = { profileDialog = false }) { Text("Cancelar") } })
     }
     if(backupDialog) {
         AlertDialog(onDismissRequest = { backupDialog = false }, title = { Text("Copia local de datos") }, text = {
@@ -140,7 +141,7 @@ fun NativeAppScreen() {
     pendingDeletion?.let { event ->
         AlertDialog(onDismissRequest = { pendingDeletion = null }, title = { Text("Eliminar torneo local") }, text = {
             Text("¿Quieres eliminar \"${event.title}\" de este dispositivo? Esta acción no se puede deshacer.")
-        }, confirmButton = { TextButton(onClick = { deleteEvent(event.id); selectedEvent = null; pendingDeletion = null }) { Text("Eliminar") } }, dismissButton = { TextButton(onClick = { pendingDeletion = null }) { Text("Cancelar") } })
+        }, confirmButton = { TextButton(onClick = { deleteEvent(event.id); selectedEvent = null; pendingDeletion = null }, modifier = Modifier.testTag("tournament-delete-confirm")) { Text("Eliminar") } }, dismissButton = { TextButton(onClick = { pendingDeletion = null }) { Text("Cancelar") } })
     }
 
     pendingBackupRestore?.let { data ->
@@ -179,7 +180,7 @@ private fun HomeTab(name: String, games: Set<String>, eventCount: Int, registrat
 @Composable
 private fun TournamentTab(visible: List<LocalTournament>, registrations: Set<String>, createdIds: Set<String>, query: String, mode: String, setQuery: (String)->Unit, setMode:(String)->Unit, create:()->Unit, open:(LocalTournament)->Unit, toggle:(String)->Unit, share:(LocalTournament)->Unit, edit:(LocalTournament)->Unit, delete:(String)->Unit) {
     Column(Modifier.fillMaxSize().padding(horizontal=16.dp, vertical=12.dp), verticalArrangement=Arrangement.spacedBy(10.dp)) {
-        Row(verticalAlignment=Alignment.CenterVertically, horizontalArrangement=Arrangement.SpaceBetween) { Text("Torneos", style=MaterialTheme.typography.headlineMedium, fontWeight=FontWeight.Bold); Button(onClick=create) { Icon(Icons.Filled.Add, null); Text("Crear") } }
+        Row(verticalAlignment=Alignment.CenterVertically, horizontalArrangement=Arrangement.SpaceBetween) { Text("Torneos", style=MaterialTheme.typography.headlineMedium, fontWeight=FontWeight.Bold); Button(onClick=create, modifier = Modifier.testTag("tournament-create")) { Icon(Icons.Filled.Add, null); Text("Crear") } }
         StatusNote("Listado local/de muestra. No consulta ni publica torneos online.")
         OutlinedTextField(query, setQuery, modifier=Modifier.fillMaxWidth(), label={Text("Buscar torneo")}, leadingIcon={Icon(Icons.Filled.Search, null)}, singleLine=true)
         Row(horizontalArrangement=Arrangement.spacedBy(4.dp)) {
@@ -195,7 +196,7 @@ private fun TournamentTab(visible: List<LocalTournament>, registrations: Set<Str
                     Column(Modifier.padding(14.dp), verticalArrangement=Arrangement.spacedBy(8.dp)) {
                         Text(event.title, style=MaterialTheme.typography.titleMedium, fontWeight=FontWeight.SemiBold)
                         Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) { AssistChip(onClick={open(event)}, label={Text(if(event.id in createdIds) "Local" else "Muestra") }); if(event.id in registrations) AssistChip(onClick={open(event)}, label={Text("Inscrito local")}) }
-                        Row(horizontalArrangement=Arrangement.spacedBy(4.dp)) { Button(onClick={open(event)}) { Text("Detalles") }; TextButton(onClick={toggle(event.id)}) { Text(if(event.id in registrations) "Retirar" else "Inscribirse") }; IconButton(onClick={share(event)} ) { Icon(Icons.Filled.Share, contentDescription="Compartir torneo") } }
+                        Row(horizontalArrangement=Arrangement.spacedBy(4.dp)) { Button(onClick={open(event)}, modifier = Modifier.testTag("tournament-details-${event.id}")) { Text("Detalles") }; TextButton(onClick={toggle(event.id)}) { Text(if(event.id in registrations) "Retirar" else "Inscribirse") }; IconButton(onClick={share(event)} ) { Icon(Icons.Filled.Share, contentDescription="Compartir torneo") } }
                         if(event.id in createdIds) Row { TextButton(onClick={edit(event)}) { Icon(Icons.Filled.Edit, null); Text("Editar") }; TextButton(onClick={delete(event.id)}) { Icon(Icons.Filled.Delete, null); Text("Eliminar") } }
                     }
                 }
@@ -218,11 +219,11 @@ private fun LocalTournamentDetailScreen(
     onDelete: () -> Unit
 ) {
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+        Modifier.fillMaxSize().testTag("tournament-detail-screen").verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Volver a torneos") }
+            IconButton(onClick = onBack, modifier = Modifier.testTag("tournament-detail-back")) { Icon(Icons.Filled.ArrowBack, contentDescription = "Volver a torneos") }
             Text("Detalle de torneo", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         }
         ElevatedCard(Modifier.fillMaxWidth()) {
@@ -235,10 +236,10 @@ private fun LocalTournamentDetailScreen(
                     "Esta ficha contiene únicamente información local o de demostración. No hay fechas, plazas, reglas, resultados ni organizador confirmados por el servidor.",
                     style = MaterialTheme.typography.bodyMedium
                 )
-                Text("ID local: \${event.id}", style = MaterialTheme.typography.bodySmall)
+                Text("ID local: ${event.id}", style = MaterialTheme.typography.bodySmall)
             }
         }
-        Button(onClick = onToggleRegistration, modifier = Modifier.fillMaxWidth()) {
+        Button(onClick = onToggleRegistration, modifier = Modifier.fillMaxWidth().testTag("tournament-registration-toggle")) {
             Text(LocalTournamentRules.detailRegistrationLabel(registered))
         }
         OutlinedButton(onClick = onShare, modifier = Modifier.fillMaxWidth()) {
@@ -252,7 +253,7 @@ private fun LocalTournamentDetailScreen(
                 Spacer(Modifier.width(8.dp))
                 Text("Editar torneo local")
             }
-            TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) {
+            TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth().testTag("tournament-detail-delete")) {
                 Icon(Icons.Filled.Delete, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
                 Text("Eliminar torneo local")
@@ -279,7 +280,7 @@ private fun CommunityTab(openSite: () -> Unit) {
 private fun ProfileTab(name: String, games: Set<String>, edit:()->Unit, backup:()->Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement=Arrangement.spacedBy(12.dp)) {
         Text("Perfil", style=MaterialTheme.typography.headlineMedium, fontWeight=FontWeight.Bold)
-        ElevatedCard { Column(Modifier.padding(16.dp), verticalArrangement=Arrangement.spacedBy(8.dp)) { Text(PlayerProfileRules.displayName(name), style=MaterialTheme.typography.titleLarge); Text(if(games.isEmpty()) "Sin juegos favoritos" else games.sorted().joinToString(" · ")); OutlinedButton(onClick=edit) { Icon(Icons.Filled.Edit, null); Text("Editar perfil") } } }
+        ElevatedCard { Column(Modifier.padding(16.dp), verticalArrangement=Arrangement.spacedBy(8.dp)) { Text(PlayerProfileRules.displayName(name), style=MaterialTheme.typography.titleLarge); Text(if(games.isEmpty()) "Sin juegos favoritos" else games.sorted().joinToString(" · ")); OutlinedButton(onClick=edit, modifier = Modifier.testTag("profile-edit")) { Icon(Icons.Filled.Edit, null); Text("Editar perfil") } } }
         ElevatedCard { Column(Modifier.padding(16.dp), verticalArrangement=Arrangement.spacedBy(8.dp)) { Text("Tus datos están guardados en este dispositivo.", style=MaterialTheme.typography.bodyMedium); Text("No son un perfil online ni se sincronizan con la web."); Button(onClick=backup) { Text("Importar / exportar copia") } } }
     }
 }
@@ -287,7 +288,7 @@ private fun ProfileTab(name: String, games: Set<String>, edit:()->Unit, backup:(
 @Composable
 private fun TitleDialog(title: String, initial: String, action: String, cancel:()->Unit, save:(String)->Unit) {
     var value by remember(initial) { mutableStateOf(initial) }
-    AlertDialog(onDismissRequest=cancel, title={Text(title)}, text={ Column { OutlinedTextField(value,{value=LocalTournamentRules.cleanTitleInput(it)},label={Text("Título")},singleLine=true); Text("${value.length}/${LocalTournamentRules.MAX_TITLE_LENGTH}",style=MaterialTheme.typography.labelSmall) } }, confirmButton={ TextButton(onClick={save(value)},enabled=LocalTournamentRules.validTitle(value)) { Text(action) } }, dismissButton={TextButton(onClick=cancel){Text("Cancelar")}})
+    AlertDialog(onDismissRequest=cancel, title={Text(title)}, text={ Column { OutlinedTextField(value,{value=LocalTournamentRules.cleanTitleInput(it)},modifier=Modifier.testTag("title-dialog-input"),label={Text("Título")},singleLine=true); Text("${value.length}/${LocalTournamentRules.MAX_TITLE_LENGTH}",style=MaterialTheme.typography.labelSmall) } }, confirmButton={ TextButton(onClick={save(value)},modifier=Modifier.testTag("title-dialog-save"),enabled=LocalTournamentRules.validTitle(value)) { Text(action) } }, dismissButton={TextButton(onClick=cancel){Text("Cancelar")}})
 }
 
 @Composable

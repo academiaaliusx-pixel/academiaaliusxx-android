@@ -15,6 +15,7 @@ android {
         targetSdk = 35
         versionCode = 20
         versionName = "1.0.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -43,4 +44,9 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     // Use a real JSON implementation in JVM unit tests instead of Android's stubbed org.json.
     testImplementation("org.json:json:20240303")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.7.6")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("androidx.test:core:1.6.1")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.6")
 }

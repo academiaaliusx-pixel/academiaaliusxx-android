@@ -37,7 +37,7 @@ Last reviewed: 27 November 2026, branch `integration/aax-web-api`.
 - [~] Local JSON export/import, bounded validation and user-visible import errors.
 - [~] Local-only states labelled; no privileged secret shipped or production write performed in this cycle.
 - [ ] Deep links, notifications, online settings/change-password/account deletion and device validation.
-- [~] Compose controls have visible labels/content descriptions for primary navigation and share actions; accessibility audit and UI tests pending.
+- [~] Compose controls have visible labels/content descriptions for primary navigation and share actions; instrumented UI tests added for navigation, detail/registration/back, local create-delete confirmation and profile editing. CI/device result pending.
 - [ ] Full offline/restore behavior, device/emulator tests, release build and broader security review.
 
 ## Backend/CI blockers
@@ -47,7 +47,7 @@ Last reviewed: 27 November 2026, branch `integration/aax-web-api`.
 - [ ] UI tests, install/run testing on device or emulator, signed release artifact, and end-to-end verification.
 
 ## Next cycle
-1. Verify CI for the native Compose shell, the system navigation inset fix, and the official launcher-logo asset.
-2. Add instrumented Compose UI tests for tab navigation, tournament-detail navigation/back, tournament lifecycle, profile editing and confirmation dialogs; use a controlled test environment.
-3. Audit Android permission/navigation/offline behavior and backup restore edge cases.
-4. Obtain read-only Pages Functions contract evidence; implement real online tournament reads only once verified.
+1. Confirm CI emulator tests and fix any flaky semantics/device issues.
+2. Audit backup restore and offline/persistence edge cases, and add test coverage for destructive confirmation paths.
+3. Audit Android permissions, deep links, system navigation and accessibility.
+4. Obtain read-only Pages Functions contract evidence; implement online features only once verified.

@@ -8,4 +8,4 @@ The tournament list now opens a dedicated Compose detail screen rather than an a
 - No unverified API fields are invented: dates, brackets, rules, capacity, results and organizers are explicitly not presented as confirmed.
 - All actions are local-device only and are not synchronized or published.
 
-Pure presentation labels and registration state text are covered by JVM unit tests. Instrumented UI navigation tests and backend verification remain pending.
+Presentation labels and registration state are covered by JVM unit tests. Instrumented tests now exercise bottom-tab navigation, tournament-detail open/back and local registration toggle, local tournament create/delete confirmation, and profile editing. CI emulator execution is required before marking these flows verified. Backend verification remains pending.
