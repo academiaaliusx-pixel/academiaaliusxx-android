@@ -5,6 +5,11 @@ on:
     branches: [main, integration/aax-web-api]
 permissions:
   contents: read
+
+# Keep only the newest build for each branch; commits in a batch cancel stale runs.
+concurrency:
+  group: aax-android-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build:
     runs-on: ubuntu-latest
