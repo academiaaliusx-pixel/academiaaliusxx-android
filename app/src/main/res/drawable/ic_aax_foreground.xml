@@ -1,9 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
- <path android:fillColor="#20C5C8" android:pathData="M54,10 L65,30 L58,30 L54,42 L50,30 L43,30 Z"/>
- <path android:fillColor="#20C5C8" android:pathData="M17,82 L41,33 L53,33 L66,58 L58,69 L48,50 L34,82 Z"/>
- <path android:fillColor="#20C5C8" android:pathData="M47,82 L76,35 L91,35 L65,82 Z"/>
- <path android:fillColor="#20C5C8" android:pathData="M20,27 L12,35 L12,70 L18,75 L18,39 L28,29 Z"/>
- <path android:fillColor="#20C5C8" android:pathData="M80,27 L90,36 L90,70 L84,75 L84,39 L74,29 Z"/>
- <path android:fillColor="#20C5C8" android:pathData="M27,86 L39,92 L69,92 L79,86 L39,86 Z"/>
-</vector>
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android" android:src="@drawable/ic_aax_logo" android:gravity="center"/>
