@@ -151,7 +151,7 @@ fun NativeAppScreen() {
 
     pendingDeletion?.let { event ->
         AlertDialog(onDismissRequest = { pendingDeletion = null }, title = { Text("Eliminar torneo local") }, text = {
-            Text("¿Quieres eliminar \\\"${event.title}\\\" de este dispositivo? Esta acción no se puede deshacer.")
+            Text("¿Quieres eliminar \\"${event.title}\\" de este dispositivo? Esta acción no se puede deshacer.")
         }, confirmButton = { TextButton(onClick = { deleteEvent(event.id); pendingDeletion = null }) { Text("Eliminar") } }, dismissButton = { TextButton(onClick = { pendingDeletion = null }) { Text("Cancelar") } })
     }
 
