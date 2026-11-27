@@ -2,7 +2,11 @@
 
 Legend: **[x]** verified complete, **[~]** partially implemented / not yet verified end-to-end, **[ ]** missing.
 
-Last reviewed: 27 November 2026, branch `integration/aax-web-api`.\n\n## Web parity strategy\n- [~] Android entry screen now loads `https://academiaaliusx.com` in a WebView to reuse the official responsive layout, content, and navigation; browser-back handling is wired. CI build and device-level compatibility checks remain pending.\n- [~] WebView main-frame network errors now display an in-app retry state; login/session behavior, downloads/uploads, links, keyboard/forms, and rendering still require device validation.\n
+Last reviewed: 27 November 2026, branch `integration/aax-web-api`.
+
+## Web parity strategy\n- [~] Android entry screen now loads `https://academiaaliusx.com` in a WebView to reuse the official responsive layout, content, and navigation; browser-back handling is wired. CI build and device-level compatibility checks remain pending.
+- [~] WebView main-frame network errors now display an in-app retry state; login/session behavior, downloads/uploads, links, keyboard/forms, and rendering still require device validation.
+
 
 ## Account and identity
 - [~] Login, registration and password-recovery screens/calls exist; deployed endpoint and auth contracts are unverified.
