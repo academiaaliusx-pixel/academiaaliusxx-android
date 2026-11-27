@@ -79,6 +79,7 @@ fun NativeAppScreen() {
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
             NavigationBar(windowInsets = WindowInsets.navigationBars) {
                 AaxTab.entries.forEach { item ->
@@ -88,7 +89,7 @@ fun NativeAppScreen() {
             }
         }
     ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
+        Box(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)) {
             when(tab) {
                 AaxTab.HOME -> HomeTab(playerName, games, events.size, registrations.size, onTournaments = { tab = AaxTab.TOURNAMENTS }, onProfile = { tab = AaxTab.PROFILE }, openSite = { openSite() })
                 AaxTab.TOURNAMENTS -> TournamentTab(visible, registrations, createdIds, query, mode, { query = it }, { mode = it }, { createDialog = true }, { selectedEvent = it }, { toggleRegistration(it) }, { shareEvent(it) }, { editEvent = it }, { deleteEvent(it) })
