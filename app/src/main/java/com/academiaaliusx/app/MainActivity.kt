@@ -154,7 +154,7 @@ class MainActivity:ComponentActivity(){override fun onCreate(savedInstanceState:
       Spacer(Modifier.height(6.dp))
       Text("Participantes: "+t.optString("n","?")+(if(t.has("max_players"))"/"+t.optString("max_players")else""),color=Muted)
       TextButton(onClick={selected=t},modifier=Modifier.fillMaxWidth()){Text("Ver detalles")}
-      Button(onClick={onAction(id,joined)},enabled=!busy&&status=="open",modifier=Modifier.fillMaxWidth()){Text(if(joined)"Cancelar inscripción" else "Inscribirme")}
+      Button(onClick={onAction(id,joined)},enabled=!busy&&TournamentListRules.isOpen(t),modifier=Modifier.fillMaxWidth()){Text(if(joined)"Cancelar inscripción" else "Inscribirme")}
      }
     }
    }
