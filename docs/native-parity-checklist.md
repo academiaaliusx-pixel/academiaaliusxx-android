@@ -20,7 +20,8 @@ Last reviewed: 27 November 2026, branch `integration/aax-web-api`.
 ## Competition
 - [~] Native list with local/demo events, search, ALL/AVAILABLE/REGISTERED/CREATED filters.
 - [~] Local detail dialog, registration/withdrawal, share, create/edit/delete and persisted state; these are device-local and do not publish events or register online.
-- [~] JSON backup/import validates local profile, favorite games, local registration IDs and created events.
+- [~] JSON backup/import validates local profile, favorite games, local registration IDs and created events; restoration now previews counts and requires explicit confirmation before replacing local data. The preview helper is unit-tested.
+- [~] Deleting a locally created tournament now requires an explicit confirmation dialog.
 - [ ] Server tournament list/detail, real join/leave, results, tournament administration, eligibility and verified loading/error/retry states against staging contracts.
 - [~] Tournament filter and persistence/title rules have JVM coverage; Compose screen/device tests pending.
 - [ ] Verified ranking/standings/podium integration.
@@ -46,7 +47,7 @@ Last reviewed: 27 November 2026, branch `integration/aax-web-api`.
 - [ ] UI tests, install/run testing on device or emulator, signed release artifact, and end-to-end verification.
 
 ## Next cycle
-1. Verify CI for this native Compose shell and fix compilation/test failures first.
-2. Add Compose UI tests for tab navigation, tournament local lifecycle, and profile editing; use a controlled test environment.
-3. Audit Android permission/navigation/offline and backup restore; keep the backup import confirmation semantics safe.
-4. Obtain read-only Pages Functions contract evidence; implement real online tournament read only once verified.
+1. Verify CI for the native Compose shell, the system navigation inset fix, and the official launcher-logo asset.
+2. Add instrumented Compose UI tests for tab navigation, tournament lifecycle, profile editing, and the new confirmation dialogs; use a controlled test environment.
+3. Audit Android permission/navigation/offline behavior and backup restore edge cases.
+4. Obtain read-only Pages Functions contract evidence; implement real online tournament reads only once verified.

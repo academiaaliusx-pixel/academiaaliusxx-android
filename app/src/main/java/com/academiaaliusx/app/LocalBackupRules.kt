@@ -12,7 +12,11 @@ data class LocalBackupPayload(
     val createdTournaments: List<LocalTournament>
 )
 
+data class LocalBackupRestorePreview(val playerName: String, val gamesCount: Int, val registrationsCount: Int, val createdTournamentsCount: Int)
+
 object LocalBackupRules {
+    fun preview(payload: LocalBackupPayload): LocalBackupRestorePreview = LocalBackupRestorePreview(payload.playerName, payload.games.size, payload.registrations.size, payload.createdTournaments.size)
+
     private const val MAX_BACKUP_BYTES = 256 * 1024
     private const val MAX_REGISTRATIONS = 2000
     private const val MAX_TOURNAMENTS = 100

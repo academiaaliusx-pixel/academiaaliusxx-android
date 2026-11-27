@@ -43,6 +43,8 @@ fun NativeAppScreen() {
     var selectedEvent by remember { mutableStateOf<LocalTournament?>(null) }
     var createDialog by remember { mutableStateOf(false) }
     var editEvent by remember { mutableStateOf<LocalTournament?>(null) }
+    var pendingDeletion by remember { mutableStateOf<LocalTournament?>(null) }
+    var pendingBackupRestore by remember { mutableStateOf<LocalBackupPayload?>(null) }
     var profileDialog by remember { mutableStateOf(false) }
     var backupDialog by remember { mutableStateOf(false) }
     var backupText by remember { mutableStateOf("") }
@@ -91,7 +93,7 @@ fun NativeAppScreen() {
         Box(Modifier.fillMaxSize().padding(padding)) {
             when(tab) {
                 AaxTab.HOME -> HomeTab(playerName, games, events.size, registrations.size, onTournaments = { tab = AaxTab.TOURNAMENTS }, onProfile = { tab = AaxTab.PROFILE }, openSite = { openSite() })
-                AaxTab.TOURNAMENTS -> TournamentTab(visible, registrations, createdIds, query, mode, { query = it }, { mode = it }, { createDialog = true }, { selectedEvent = it }, { toggleRegistration(it) }, { shareEvent(it) }, { editEvent = it }, { deleteEvent(it) })
+                AaxTab.TOURNAMENTS -> TournamentTab(visible, registrations, createdIds, query, mode, { query = it }, { mode = it }, { createDialog = true }, { selectedEvent = it }, { toggleRegistration(it) }, { shareEvent(it) }, { editEvent = it }, { id -> pendingDeletion = created.firstOrNull { event -> event.id == id } })
                 AaxTab.COMMUNITY -> CommunityTab(openSite = { openSite("/comunidad") })
                 AaxTab.PROFILE -> ProfileTab(playerName, games, { profileDialog = true }, { backupDialog = true })
             }
@@ -141,10 +143,29 @@ fun NativeAppScreen() {
             }) { Text("Generar") }
         }, dismissButton = {
             Row {
-                TextButton(onClick = { try { val data=LocalBackupRules.parse(backupText); playerName=data.playerName; games=data.games; registrations=data.registrations; created=data.createdTournaments; persist(); backupMessage="Datos importados."; } catch(e: Exception) { backupMessage=e.message ?: "Copia inválida" } }) { Text("Importar") }
+                TextButton(onClick = { try { pendingBackupRestore=LocalBackupRules.parse(backupText); backupMessage="Copia válida. Revisa el resumen antes de restaurar."; } catch(e: Exception) { backupMessage=e.message ?: "Copia inválida" } }) { Text("Revisar importación") }
                 TextButton(onClick = { backupDialog = false; backupMessage = "" }) { Text("Cerrar") }
             }
         })
+    }
+
+    pendingDeletion?.let { event ->
+        AlertDialog(onDismissRequest = { pendingDeletion = null }, title = { Text("Eliminar torneo local") }, text = {
+            Text("¿Quieres eliminar \\\"${event.title}\\\" de este dispositivo? Esta acción no se puede deshacer.")
+        }, confirmButton = { TextButton(onClick = { deleteEvent(event.id); pendingDeletion = null }) { Text("Eliminar") } }, dismissButton = { TextButton(onClick = { pendingDeletion = null }) { Text("Cancelar") } })
+    }
+
+    pendingBackupRestore?.let { data ->
+        val preview = LocalBackupRules.preview(data)
+        AlertDialog(onDismissRequest = { pendingBackupRestore = null }, title = { Text("Confirmar restauración") }, text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Se sustituirán los datos locales actuales por los datos de la copia.")
+                Text("Nombre: ${preview.playerName}")
+                Text("Juegos favoritos: ${preview.gamesCount}")
+                Text("Inscripciones locales: ${preview.registrationsCount}")
+                Text("Torneos creados: ${preview.createdTournamentsCount}")
+            }
+        }, confirmButton = { TextButton(onClick = { playerName=data.playerName; games=data.games; registrations=data.registrations; created=data.createdTournaments; persist(); backupMessage="Restauración completada."; pendingBackupRestore=null }) { Text("Restaurar") } }, dismissButton = { TextButton(onClick = { pendingBackupRestore=null }) { Text("Cancelar") } })
     }
 }
 

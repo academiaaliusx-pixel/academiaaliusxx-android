@@ -29,6 +29,18 @@ class LocalBackupRulesTest {
         assertEquals(listOf(LocalTournament("custom-1", "Liga de prueba")), restored.createdTournaments)
     }
 
+    @Test fun restorePreviewSummarizesValidatedPayloadWithoutMutatingIt() {
+        val payload = LocalBackupRules.parse(LocalBackupRules.json(
+            "Jugador", setOf("Pokémon", "Beyblade X"), setOf("bx-local", "custom-1"),
+            listOf(LocalTournament("custom-1", "Liga"))
+        ))
+        val preview = LocalBackupRules.preview(payload)
+        assertEquals("Jugador", preview.playerName)
+        assertEquals(2, preview.gamesCount)
+        assertEquals(2, preview.registrationsCount)
+        assertEquals(1, preview.createdTournamentsCount)
+    }
+
     @Test fun rejectsUnsupportedSchemaAndDuplicateTournamentIds() {
         expectInvalid("""{"schemaVersion":2,"playerName":"A","games":[],"registrations":[],"createdTournaments":[]}""")
         expectInvalid("""{"schemaVersion":1.5,"playerName":"A","games":[],"registrations":[],"createdTournaments":[]}""")
