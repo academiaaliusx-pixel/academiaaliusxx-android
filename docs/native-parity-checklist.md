@@ -15,8 +15,8 @@ Last reviewed: 27 November 2026, branch `integration/aax-web-api`.
 - [~] Static game catalog and tournament grouping/filtering are present; catalog source and synchronization are not authoritative.
 
 ## Competition
-- [~] Tournament list and registration/cancellation UI/API calls exist; route contracts are unverified. Native list filtering by title/game/status and open/registered state is implemented locally and covered by JVM tests; server-side search and detail/results remain unverified/missing.
-- [ ] Search, full filters, tournament detail, result reporting, creation/management and error/loading/empty-state consistency need work.
+- [~] Tournament list and registration/cancellation UI/API calls exist; route contracts are unverified. Native list filtering by title/game/status and open/registered state is implemented locally and covered by JVM tests. A local detail dialog now displays fields present in list responses; a dedicated server detail/results route remains unverified/missing.
+- [~] Search, local filters and local detail presentation are implemented; server detail, result reporting, creation/management and consistent error/loading/empty states still need work.
 - [~] Ranking and recent-podium views call API methods; contracts and presentation completeness remain unverified.
 
 ## Community
@@ -41,7 +41,7 @@ Last reviewed: 27 November 2026, branch `integration/aax-web-api`.
 - [ ] Complete screen-level UI tests, release build, APK verification, and device testing.
 
 ## Immediate next cycle
-1. Verify CI for the latest tournament-list filtering commit.
-2. Complete tournament detail navigation and safe read-only detail presentation only after an endpoint contract is evidenced; otherwise implement detail using verified fields from the existing list without speculative calls.
+1. Verify CI for local tournament detail dialog.
+2. Continue tournament result/management gaps only when endpoint contracts are evidenced.
 3. Audit session restore/401 and navigation UI states with tests; device-level Keystore behavior remains unverified.
 4. Continue contract discovery without production writes; do not label speculative calls as verified.
