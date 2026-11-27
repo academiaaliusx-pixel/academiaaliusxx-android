@@ -26,7 +26,12 @@ class TournamentListRulesTest {
         assertEquals(listOf("Final regional"), TournamentListRules.filter(sample, "inazuma").map(TournamentListRules::title))
     }
 
-    @Test fun openStatusIsCaseInsensitiveAndTrimmed() {\n        assertTrue(TournamentListRules.isOpen(JSONObject().put("status", " OPEN ")))\n        assertFalse(TournamentListRules.isOpen(JSONObject().put("status", "closed")))\n    }\n\n    @Test fun openFilterOnlyIncludesOpenEvents() {
+    @Test fun openStatusIsCaseInsensitiveAndTrimmed() {
+        assertTrue(TournamentListRules.isOpen(JSONObject().put("status", " OPEN ")))
+        assertFalse(TournamentListRules.isOpen(JSONObject().put("status", "closed")))
+    }
+
+    @Test fun openFilterOnlyIncludesOpenEvents() {
         assertEquals(2, TournamentListRules.filter(sample, "", TournamentListFilter.OPEN).size)
         assertTrue(TournamentListRules.filter(sample, "", TournamentListFilter.OPEN).all { it.optString("status") == "open" })
     }
