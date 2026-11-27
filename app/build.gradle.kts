@@ -41,4 +41,6 @@ dependencies {
     implementation("com.google.code.gson:gson:2.11.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0" )
     testImplementation("junit:junit:4.13.2")
+    // Use a real JSON implementation in JVM unit tests instead of Android's stubbed org.json.
+    testImplementation("org.json:json:20240303")
 }
