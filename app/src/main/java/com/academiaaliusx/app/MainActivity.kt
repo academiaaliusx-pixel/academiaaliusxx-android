@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
                                 canGoBack = view.canGoBack()
                             }
                         }
-                        if (savedInstanceState == null) loadUrl("https://academiaaliusx.com")
+                        loadUrl("https://academiaaliusx.com")
                     }
                 },
                 update = { canGoBack = it.canGoBack() }
