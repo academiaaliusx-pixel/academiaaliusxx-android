@@ -15,7 +15,7 @@ Last reviewed: 27 November 2026, branch `integration/aax-web-api`.
 - [~] Static game catalog and tournament grouping/filtering are present; catalog source and synchronization are not authoritative.
 
 ## Competition
-- [~] Tournament list and registration/cancellation UI/API calls exist; route contracts are unverified. Native list filtering by title/game/status and open/registered state is implemented locally and covered by JVM tests. A local detail dialog now displays fields present in list responses; a dedicated server detail/results route remains unverified/missing.
+- [~] Tournament list and registration/cancellation UI/API calls exist; eligibility for open events is now case-insensitive/trimmed in local UI logic and tested; route contracts are unverified. Native list filtering by title/game/status and open/registered state is implemented locally and covered by JVM tests. A local detail dialog now displays fields present in list responses; a dedicated server detail/results route remains unverified/missing.
 - [~] Search, local filters and local detail presentation are implemented; server detail, result reporting, creation/management and consistent error/loading/empty states still need work.
 - [~] Ranking and recent-podium views call API methods; contracts and presentation completeness remain unverified.
 
