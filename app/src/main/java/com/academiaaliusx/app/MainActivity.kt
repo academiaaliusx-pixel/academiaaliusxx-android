@@ -125,8 +125,39 @@ class MainActivity:ComponentActivity(){override fun onCreate(savedInstanceState:
  Column(Modifier.verticalScroll(rememberScrollState())){Text("▰  TU UNIVERSO GAMER",color=Cyan,fontSize=13.sp,fontWeight=FontWeight.Bold,letterSpacing=2.sp);Spacer(Modifier.height(8.dp));Text("¡Bienvenido, "+user.optString("nick")+"!",fontSize=30.sp,fontWeight=FontWeight.Black,lineHeight=34.sp);Spacer(Modifier.height(10.dp));Text("Ahora conectado a Academia Alius X.",color=Muted,fontSize=17.sp);Spacer(Modifier.height(20.dp));Card(colors=CardDefaults.cardColors(containerColor=Panel),shape=androidx.compose.foundation.shape.CutCornerShape(14.dp),border=androidx.compose.foundation.BorderStroke(1.dp,Edge)){Column(Modifier.padding(18.dp)){Text(count.toString(),fontSize=32.sp,color=Cyan,fontWeight=FontWeight.Black);Text("Torneos disponibles/registrados en el servidor")}};Spacer(Modifier.height(12.dp));Button(onClick=toTournaments,shape=androidx.compose.foundation.shape.CutCornerShape(12.dp),colors=ButtonDefaults.buttonColors(containerColor=Cyan,contentColor=Ink),modifier=Modifier.fillMaxWidth().height(54.dp)){Icon(Icons.Filled.EmojiEvents,null);Spacer(Modifier.width(8.dp));Text("Explorar torneos online")};Spacer(Modifier.height(8.dp));OutlinedButton(onClick=toProfile,shape=androidx.compose.foundation.shape.CutCornerShape(12.dp),border=androidx.compose.foundation.BorderStroke(1.dp,Edge),modifier=Modifier.fillMaxWidth().height(52.dp)){Icon(Icons.Filled.Person,null);Spacer(Modifier.width(8.dp));Text("Ver mi perfil")}}
 }
 @Composable private fun TournamentScreen(items:List<JSONObject>,user:JSONObject,busy:Boolean,notice:String,onNotice:(String)->Unit,onAction:(String,Boolean)->Unit){
- Column(Modifier.fillMaxSize()){Text("TORNEOS ONLINE",fontSize=28.sp,fontWeight=FontWeight.Black,letterSpacing=1.5.sp);Text("Datos consultados desde el servidor",color=Cyan);Spacer(Modifier.height(12.dp));if(items.isEmpty())Text("No hay torneos disponibles o la respuesta está vacía.",color=Muted)
- LazyColumn(verticalArrangement=Arrangement.spacedBy(12.dp)){items(items){t->val id=t.optString("id");val title=t.optString("name",t.optString("title","Torneo"));val joined=t.optInt("joined",0)>0;val status=t.optString("status");Card(colors=CardDefaults.cardColors(containerColor=Panel),shape=androidx.compose.foundation.shape.CutCornerShape(14.dp),border=androidx.compose.foundation.BorderStroke(1.dp,Edge)){Column(Modifier.padding(16.dp)){Text(title,fontWeight=FontWeight.Bold,fontSize=18.sp);Spacer(Modifier.height(4.dp));Text(listOf(t.optString("game"),t.optString("date"),status).filter{it.isNotBlank()}.joinToString(" · "),color=Muted,fontSize=12.sp);Spacer(Modifier.height(6.dp));Text("Participantes: "+t.optString("n","?")+(if(t.has("max_players"))"/"+t.optString("max_players")else""),color=Muted);Button(onClick={onAction(id,joined)},enabled=!busy&&status=="open",modifier=Modifier.fillMaxWidth()){Text(if(joined)"Cancelar inscripción" else "Inscribirme")}}}}}}
+ var query by remember { mutableStateOf("") }
+ var filter by remember { mutableStateOf(TournamentListFilter.ALL) }
+ val visible=TournamentListRules.filter(items,query,filter)
+ Column(Modifier.fillMaxSize()){
+  Text("TORNEOS ONLINE",fontSize=28.sp,fontWeight=FontWeight.Black,letterSpacing=1.5.sp)
+  Text("Datos consultados desde el servidor",color=Cyan)
+  Spacer(Modifier.height(12.dp))
+  OutlinedTextField(query,{query=it},label={Text("Buscar por torneo, juego o estado")},singleLine=true,modifier=Modifier.fillMaxWidth())
+  if(query.isNotBlank()) TextButton(onClick={query=""}){Text("Borrar búsqueda")}
+  Row(horizontalArrangement=Arrangement.spacedBy(6.dp),modifier=Modifier.fillMaxWidth()){
+   FilterChip(selected=filter==TournamentListFilter.ALL,onClick={filter=TournamentListFilter.ALL},label={Text("Todos")})
+   FilterChip(selected=filter==TournamentListFilter.OPEN,onClick={filter=TournamentListFilter.OPEN},label={Text("Abiertos")})
+   FilterChip(selected=filter==TournamentListFilter.JOINED,onClick={filter=TournamentListFilter.JOINED},label={Text("Inscritos")})
+  }
+  Text("\${visible.size} de \${items.size} torneos",color=Muted,modifier=Modifier.padding(vertical=6.dp))
+  if(items.isEmpty()) Text("No hay torneos en la respuesta del servidor.",color=Muted)
+  else if(visible.isEmpty()) Text("No hay torneos que coincidan. Prueba a borrar la búsqueda o cambiar el filtro.",color=Muted)
+  LazyColumn(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(12.dp)){
+   items(visible){t->
+    val id=t.optString("id");val title=TournamentListRules.title(t);val joined=TournamentListRules.isJoined(t);val status=t.optString("status")
+    Card(colors=CardDefaults.cardColors(containerColor=Panel),shape=androidx.compose.foundation.shape.CutCornerShape(14.dp),border=androidx.compose.foundation.BorderStroke(1.dp,Edge)){
+     Column(Modifier.padding(16.dp)){
+      Text(title,fontWeight=FontWeight.Bold,fontSize=18.sp)
+      Spacer(Modifier.height(4.dp))
+      Text(listOf(t.optString("game"),t.optString("date"),status).filter{it.isNotBlank()}.joinToString(" · "),color=Muted,fontSize=12.sp)
+      Spacer(Modifier.height(6.dp))
+      Text("Participantes: "+t.optString("n","?")+(if(t.has("max_players"))"/"+t.optString("max_players")else""),color=Muted)
+      Button(onClick={onAction(id,joined)},enabled=!busy&&status=="open",modifier=Modifier.fillMaxWidth()){Text(if(joined)"Cancelar inscripción" else "Inscribirme")}
+     }
+    }
+   }
+  }
+ }
 }
 @Composable private fun ProfileScreen(user:JSONObject,profile:JSONObject?,busy:Boolean,notice:String,refresh:()->Unit,logout:()->Unit){
  val scope=rememberCoroutineScope();var msg by remember{mutableStateOf("")}
