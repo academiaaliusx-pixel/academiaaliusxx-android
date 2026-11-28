@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-    <path android:fillColor="#00C6C9" android:pathData="M54,18 C73,18 90,34 90,54 C90,74 73,90 54,90 C34,90 18,74 18,54 C18,34 34,18 54,18 Z"/>
-    <path android:fillColor="#C5D0D6" android:pathData="M54,26 C69,26 82,39 82,54 C82,69 69,82 54,82 C39,82 26,69 26,54 C26,39 39,26 54,26 Z"/>
-    <path android:fillColor="#00BFC5" android:pathData="M54,32 C66,32 76,42 76,54 C76,66 66,76 54,76 C42,76 32,66 32,54 C32,42 42,32 54,32 Z"/>
-    <path android:fillColor="#FF000000" android:pathData="M10,27 L27,10 L98,81 L81,98 Z"/>
-    <path android:fillColor="#FF000000" android:pathData="M81,10 L98,27 L27,98 L10,81 Z"/>
-    <path android:fillColor="#FF000000" android:pathData="M8,26 C20,5 40,4 54,15 L44,25 C34,18 24,19 19,30 Z"/>
-    <path android:fillColor="#FF000000" android:pathData="M100,82 C88,103 68,104 54,93 L64,83 C74,90 84,89 89,78 Z"/>
+    <!-- Turquoise and silver globe -->
+    <path android:fillColor="#00D2D8" android:pathData="M54,14 C76,14 94,32 94,54 C94,76 76,94 54,94 C32,94 14,76 14,54 C14,32 32,14 54,14 Z"/>
+    <path android:fillColor="#D9E1E7" android:pathData="M54,20 C72,20 88,36 88,54 C88,72 72,88 54,88 C36,88 20,72 20,54 C20,36 36,20 54,20 Z"/>
+    <path android:fillColor="#00BFCB" android:pathData="M54,22 C72,22 88,36 88,54 C88,72 72,88 54,88 C36,88 20,72 20,54 C20,36 36,22 54,22 Z"/>
+    <path android:fillColor="#E6EDF1" android:pathData="M18,48 C24,30 42,24 56,28 C70,32 78,44 76,56 C74,70 60,80 46,76 C30,72 20,60 18,48 Z"/>
+    <path android:fillColor="#AAB7C0" android:pathData="M25,49 C30,37 42,31 54,34 C66,37 72,47 70,58 C68,69 57,76 46,72 C35,69 27,60 25,49 Z"/>
+    <path android:fillColor="#00C5CD" android:pathData="M48,28 C63,22 79,31 86,44 L74,58 C69,44 58,38 44,40 Z"/>
+    <path android:fillColor="#008F9A" android:pathData="M62,65 C77,60 86,70 82,82 C72,91 59,94 46,89 L55,77 Z"/>
+    <!-- Black crossed orbital X, broad smooth ribbons -->
+    <path android:fillColor="#050505" android:pathData="M12,18 C20,10 30,10 39,16 L92,72 C101,81 99,91 91,98 C83,103 74,100 66,93 L14,39 C6,31 6,24 12,18 Z"/>
+    <path android:fillColor="#050505" android:pathData="M96,18 C88,10 78,10 69,16 L16,72 C7,81 9,91 17,98 C25,103 34,100 42,93 L94,39 C102,31 102,24 96,18 Z"/>
+    <!-- Refined outer ribbon tips -->
+    <path android:fillColor="#050505" android:pathData="M8,20 C15,8 29,7 42,14 L34,24 C25,19 18,20 14,29 Z"/>
+    <path android:fillColor="#050505" android:pathData="M100,88 C93,100 79,101 66,94 L74,84 C83,89 90,88 94,79 Z"/>
 </vector>
